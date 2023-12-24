@@ -132,7 +132,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         createButtonContainer()
         setButtonContainerLayout()
 
-        if config.mode == .normal {
+        if config.mode == .normal && config.toolbarButtonOptions.contains(.done) {
             addButtonsToContainer(button: cancelButton)
         }
         
@@ -166,7 +166,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
             let icon = iconProvider?.getResetIcon() ?? ToolBarButtonImageBuilder.resetImage()
             resetButton = createResetButton(with: icon)
             addButtonsToContainer(button: resetButton)
-            resetButton?.isHidden = true
+            resetButton?.alpha = 0.5
         }
 
         if config.toolbarButtonOptions.contains(.ratio) && config.ratioCandidatesShowType == .presentRatioListFromButton {
@@ -176,12 +176,12 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
 
                 if config.presetRatiosButtonSelected {
                     handleFixedRatioSetted(ratio: 0)
-                    resetButton?.isHidden = false
+                    resetButton?.alpha = 1.0
                 }
             }
         }
 
-        if config.mode == .normal {
+        if config.mode == .normal && config.toolbarButtonOptions.contains(.done) {
             addButtonsToContainer(button: cropButton)
         }
     }
@@ -211,28 +211,46 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
     }
 
     public func handleFixedRatioSetted(ratio: Double) {
-        fixedRatioSettingButton?.tintColor = nil
+        animate {
+            self.fixedRatioSettingButton?.tintColor = nil
+        }
     }
 
     public func handleFixedRatioUnSetted() {
-        fixedRatioSettingButton?.tintColor = config.foregroundColor
+        animate {
+            self.fixedRatioSettingButton?.tintColor = self.config.foregroundColor
+        }
     }
 
     public func handleCropViewDidBecomeResettable() {
-        resetButton?.isHidden = false
+        animate {
+            self.resetButton?.alpha = 1.0
+        }
     }
 
     public func handleCropViewDidBecomeUnResettable() {
-        resetButton?.isHidden = true
+        animate {
+            self.resetButton?.alpha = 0.5
+        }
     }
     
     public func handleImageAutoAdjustable() {
-        autoAdjustButton.isHidden = false
+        animate {
+            self.autoAdjustButton.isHidden = false
+        }
     }
     
     public func handleImageNotAutoAdjustable() {
-        autoAdjustButton.isHidden = true
-        autoAdjustButtonActive = false
+        animate {
+            self.autoAdjustButton.isHidden = true
+            self.autoAdjustButtonActive = false
+        }
+    }
+    
+    private func animate(action: @escaping () -> Void) {
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseOut) {
+            action()
+        }
     }
 }
 

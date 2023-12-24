@@ -19,19 +19,19 @@ public struct CropToolbarConfig {
             assert(widthForHorizontalOrientation >= 44)
         }
     }
-
+    
     /**
      The color settings are not for Mac Catalyst (Optimize Interface for Mac) for now
      I haven't figured out a correct way to set button title color for this scenario
      */
     public var backgroundColor: UIColor = .black
     public var foregroundColor: UIColor = .white
-
+    
     public var toolbarButtonOptions: ToolbarButtonOptions = .default
     
     // The properties below are required by CropViewController and for some specific scenarios
     // Most of time you can set just their default values as CropToolbarConfig does
-
+    
     /**
      - .presentRatioListFromButton shows ratio list after tapping a button
      - .alwaysShowRatioList shows ratio list without tapping any button
