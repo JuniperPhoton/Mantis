@@ -268,12 +268,19 @@ open class CropViewController: UIViewController {
         ratioPresenter?.present(by: self, in: presentSourceView)
     }
     
-    private func handleReset() {
+    private func handleReset(animated: Bool) {
         if isNeedToResetRatioButton() {
             resetRatioButton()
         }
         
-        cropView.reset()
+        if animated {
+            UIView.animate(withDuration: 0.25) { [weak self] in
+                self?.cropView.reset()
+            }
+        } else {
+            self.cropView.reset()
+        }
+        
         ratioSelector?.reset()
         ratioSelector?.update(fixedRatioManager: getFixedRatioManager())
         showImageAutoAdjustStatusIfNeeded()
@@ -424,7 +431,7 @@ extension CropViewController: CropToolbarDelegate {
     }
     
     public func didSelectReset(_ cropToolbar: CropToolbarProtocol? = nil) {
-        handleReset()
+        handleReset(animated: true)
     }
     
     public func didSelectSetRatio(_ cropToolbar: CropToolbarProtocol? = nil) {
@@ -450,6 +457,10 @@ extension CropViewController: CropToolbarDelegate {
 
 // API
 extension CropViewController {
+    public func getCropInfo() -> CropInfo {
+        return cropView.getCropInfo()
+    }
+    
     public func crop() {
         switch config.cropMode {
         case .sync:

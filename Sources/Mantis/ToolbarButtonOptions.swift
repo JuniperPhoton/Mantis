@@ -21,16 +21,26 @@ public struct ToolbarButtonOptions: OptionSet {
     static public let horizontallyFlip = ToolbarButtonOptions(rawValue: 1 << 5)
     static public let verticallyFlip = ToolbarButtonOptions(rawValue: 1 << 6)
     static public let autoAdjust = ToolbarButtonOptions(rawValue: 1 << 7)
+    static public let cancel = ToolbarButtonOptions(rawValue: 1 << 8)
+    static public let done = ToolbarButtonOptions(rawValue: 1 << 9)
     
-    static public let `default`: ToolbarButtonOptions = [counterclockwiseRotate,
-                                                         reset,
-                                                         ratio]
+    static public let `default`: ToolbarButtonOptions = [
+        cancel,
+        counterclockwiseRotate,
+        reset,
+        ratio,
+        done
+    ]
     
-    static public let all: ToolbarButtonOptions = [counterclockwiseRotate,
-                                                   clockwiseRotate,
-                                                   reset,
-                                                   ratio,
-                                                   alterCropper90Degree,
-                                                   horizontallyFlip,
-                                                   verticallyFlip]
+    static public let all: ToolbarButtonOptions = [
+        cancel,
+        counterclockwiseRotate,
+        clockwiseRotate,
+        reset,
+        ratio,
+        alterCropper90Degree,
+        horizontallyFlip,
+        verticallyFlip,
+        done
+    ]
 }

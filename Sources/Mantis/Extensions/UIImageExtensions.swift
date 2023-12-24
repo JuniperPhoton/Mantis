@@ -86,41 +86,15 @@ extension UIImage {
             return nil
         }
         
-        var transform = CGAffineTransform.identity
-        transform.transformed(by: cropInfo)
-        
-        let outputSize = getOutputCropImageSize(by: cropInfo)
-        
-        do {
-            guard let transformedCGImage = try fixedOrientationImage.transformedImage(transform,
-                                                                                      outputSize: outputSize,
-                                                                                      cropSize: cropInfo.cropSize,
-                                                                                      imageViewSize: cropInfo.imageViewSize) else {
-                return nil
-            }
-            
-            return UIImage(cgImage: transformedCGImage)
-        } catch {
-            print("*** Failed to get transfromed image ***")
-
-            if let error = error as? ImageProcessError {
-                print("Failed reason: \(error)")
-            }
-            
+        guard let transformedCGImage = ImageCropHelper.shared.crop(with: fixedOrientationImage, cropInfo: cropInfo) else {
             return nil
         }
+        
+        return UIImage(cgImage: transformedCGImage)
     }
     
     func getOutputCropImageSize(by cropInfo: CropInfo) -> CGSize {
-        let zoomScaleX = abs(cropInfo.scaleX)
-        let zoomScaleY = abs(cropInfo.scaleY)
-        let cropSize = cropInfo.cropSize
-        let imageViewSize = cropInfo.imageViewSize
-        
-        let expectedWidth = round((size.width / imageViewSize.width * cropSize.width) / zoomScaleX)
-        let expectedHeight = round((size.height / imageViewSize.height * cropSize.height) / zoomScaleY)
-        
-        return CGSize(width: expectedWidth, height: expectedHeight)
+        return ImageCropHelper.shared.getOutputCropImageSize(size: size, by: cropInfo)
     }
 }
 
