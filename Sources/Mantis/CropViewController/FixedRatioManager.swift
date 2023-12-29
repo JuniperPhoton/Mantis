@@ -58,7 +58,7 @@ final class FixedRatioManager {
             appendToTail(ratioItems: customRatios)
         }
 
-        sort(isByHorizontal: (type == .horizontal))
+        //sort(isByHorizontal: (type == .horizontal))
     }
 
     func getOriginalRatioItem() -> RatioItemType? {
