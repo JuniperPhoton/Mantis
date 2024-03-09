@@ -258,10 +258,13 @@ open class CropViewController: UIViewController {
             return
         }
         
-        ratioPresenter = RatioPresenter(type: fixedRatioManager.type,
-                                        originalRatioH: fixedRatioManager.originalRatioH,
-                                        ratios: fixedRatioManager.ratios,
-                                        fixRatiosShowType: config.cropToolbarConfig.fixedRatiosShowType)
+        ratioPresenter = RatioPresenter(
+            type: fixedRatioManager.type,
+            originalRatioH: fixedRatioManager.originalRatioH,
+            ratios: fixedRatioManager.ratios,
+            fixRatiosShowType: config.cropToolbarConfig.fixedRatiosShowType,
+            modalPresenter: config.ratioModalPresenter
+        )
         ratioPresenter?.didGetRatio = {[weak self] ratio in
             self?.setFixedRatio(ratio, zoom: false)
         }

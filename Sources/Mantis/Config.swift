@@ -47,6 +47,8 @@ public struct Config {
     public var presetFixedRatioType: PresetFixedRatioType = .canUseMultiplePresetFixedRatio()
     public var showAttachedCropToolbar = true
     
+    public var ratioModalPresenter: any RatioModalPresenter = DefaultRatioModalPresenter()
+    
     public private(set) var localizationConfig = Mantis.localizationConfig
     
     var customRatios: [(width: Int, height: Int)] = []

@@ -13,20 +13,77 @@ enum RatioType {
     case vertical
 }
 
+public protocol RatioModalPresenter {
+    func present(
+        items: [RatioDisplayItem],
+        by viewController: UIViewController,
+        in sourceView: UIView,
+        didGetRatio: @escaping ((Double) -> Void)
+    )
+}
+
+public class DefaultRatioModalPresenter: RatioModalPresenter {
+    public func present(
+        items: [RatioDisplayItem],
+        by viewController: UIViewController,
+        in sourceView: UIView,
+        didGetRatio: @escaping ((Double) -> Void)
+    ) {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        for ratio in items {
+            let action = UIAlertAction(title: ratio.title, style: .default) { _ in
+                didGetRatio(ratio.ratioValue)
+            }
+            actionSheet.addAction(action)
+        }
+        
+        actionSheet.handlePopupInBigScreenIfNeeded(sourceView: sourceView)
+        
+        let cancelText = LocalizedHelper.getString("Mantis.Cancel", value: "Cancel")
+        let cancelAction = UIAlertAction(title: cancelText, style: .cancel)
+        actionSheet.addAction(cancelAction)
+        
+        viewController.present(actionSheet, animated: true)
+    }
+}
+
+public struct RatioDisplayItem: Identifiable {
+    public let isOriginal: Bool
+    public let title: String
+    public let ratioValue: Double
+    public let id: String
+    
+    public init(isOriginal: Bool, title: String, ratioValue: Double, id: String) {
+        self.isOriginal = isOriginal
+        self.title = title
+        self.ratioValue = ratioValue
+        self.id = id
+    }
+}
+
 final class RatioPresenter {
     var didGetRatio: ((Double) -> Void) = { _ in }
     private var type: RatioType = .vertical
     private var originalRatioH: Double
     private var ratios: [RatioItemType]
     private var fixRatiosShowType: FixedRatiosShowType = .adaptive
-
-    init(type: RatioType, originalRatioH: Double, ratios: [RatioItemType] = [], fixRatiosShowType: FixedRatiosShowType = .adaptive) {
+    private let modalPresenter: any RatioModalPresenter
+    
+    init(
+        type: RatioType,
+        originalRatioH: Double,
+        ratios: [RatioItemType] = [],
+        fixRatiosShowType: FixedRatiosShowType = .adaptive,
+        modalPresenter: any RatioModalPresenter
+    ) {
         self.type = type
         self.originalRatioH = originalRatioH
         self.ratios = ratios
         self.fixRatiosShowType = fixRatiosShowType
+        self.modalPresenter = modalPresenter
     }
-
+    
     private func getItemTitle(by ratio: RatioItemType) -> String {
         switch fixRatiosShowType {
         case .adaptive:
@@ -37,7 +94,7 @@ final class RatioPresenter {
             return ratio.nameV
         }
     }
-
+    
     private func getItemValue(by ratio: RatioItemType) -> Double {
         switch fixRatiosShowType {
         case .adaptive:
@@ -48,28 +105,21 @@ final class RatioPresenter {
             return ratio.ratioV
         }
     }
-
+    
     func present(by viewController: UIViewController, in sourceView: UIView) {
-        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-
-        for ratio in ratios {
-            let title = getItemTitle(by: ratio)
-
-            let action = UIAlertAction(title: title, style: .default) {[weak self] _ in
-                guard let self = self else { return }
-                let ratioValue = self.getItemValue(by: ratio)
-                self.didGetRatio(ratioValue)
-            }
-            actionSheet.addAction(action)
+        let originalText = LocalizedHelper.getString("Mantis.Original", value: "Original")
+        
+        let ratios = self.ratios.map { type in
+            RatioDisplayItem(
+                isOriginal: getItemTitle(by: type) == originalText,
+                title: getItemTitle(by: type),
+                ratioValue: getItemValue(by: type),
+                id: UUID().uuidString
+            )
         }
-
-        actionSheet.handlePopupInBigScreenIfNeeded(sourceView: sourceView)
-
-        let cancelText = LocalizedHelper.getString("Mantis.Cancel", value: "Cancel")
-        let cancelAction = UIAlertAction(title: cancelText, style: .cancel)
-        actionSheet.addAction(cancelAction)
-
-        viewController.present(actionSheet, animated: true)
+        modalPresenter.present(items: ratios, by: viewController, in: sourceView) { [weak self] ratio in
+            self?.didGetRatio(ratio)
+        }
     }
 }
 
@@ -81,7 +131,7 @@ public extension UIAlertController {
             popoverPresentationController?.sourceView = sourceView
             popoverPresentationController?.sourceRect = sourceView.bounds
         }
-
+        
         if #available(macCatalyst 14.0, iOS 14.0, *) {
             if UIDevice.current.userInterfaceIdiom == .pad || UIDevice.current.userInterfaceIdiom == .mac {
                 handlePopupInBigScreen(sourceView: sourceView, permittedArrowDirections: permittedArrowDirections)
