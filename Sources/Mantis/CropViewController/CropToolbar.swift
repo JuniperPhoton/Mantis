@@ -74,6 +74,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
     }()
 
     private var fixedRatioSettingButton: UIButton?
+    private var fixedRatioLockIconView: UIView?
     
     private lazy var cancelButton: UIButton = {
         if let icon = iconProvider?.getCancelIcon() {
@@ -213,12 +214,24 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
     public func handleFixedRatioSetted(ratio: Double) {
         animate {
             self.fixedRatioSettingButton?.tintColor = nil
+            if let fixedRatioLockIconView = self.fixedRatioLockIconView {
+                fixedRatioLockIconView.removeFromSuperview()
+            }
+            let lockIconView = UIImageView(image: UIImage(systemName: "lock.fill"))
+            lockIconView.contentMode = .scaleAspectFit
+            lockIconView.frame = CGRect(x: 8, y: 8, width: 12, height: 12)
+            lockIconView.tintColor = .white
+            self.fixedRatioSettingButton?.addSubview(lockIconView)
+            self.fixedRatioLockIconView = lockIconView
         }
     }
 
     public func handleFixedRatioUnSetted() {
         animate {
             self.fixedRatioSettingButton?.tintColor = self.config.foregroundColor
+            if let fixedRatioLockIconView = self.fixedRatioLockIconView {
+                fixedRatioLockIconView.removeFromSuperview()
+            }
         }
     }
 
