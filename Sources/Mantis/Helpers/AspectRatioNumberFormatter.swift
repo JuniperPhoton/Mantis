@@ -8,6 +8,14 @@
 import Foundation
 
 public class AspectRatioNumberFormatter {
+    private let formatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        formatter.numberStyle = .decimal
+        return formatter
+    }()
+    
     public init() {
         // empty
     }
@@ -15,11 +23,6 @@ public class AspectRatioNumberFormatter {
     /// Format the number to a string, which:
     /// - Keep up to 2 fraction digits
     public func formatNumber(_ number: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        formatter.numberStyle = .decimal
-        
         guard let formattedNumber = formatter.string(from: NSNumber(value: number)) else {
             return ""
         }
