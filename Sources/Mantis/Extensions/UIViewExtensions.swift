@@ -26,3 +26,13 @@ extension UIView {
         return nil
     }
 }
+
+extension UIView {
+    func addHoverHighlightStyleCompat() {
+        if #available(iOS 17.0, *) {
+            self.hoverStyle = UIHoverStyle(effect: .highlight)
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+}

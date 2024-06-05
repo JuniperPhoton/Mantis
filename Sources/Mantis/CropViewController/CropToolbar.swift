@@ -25,6 +25,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         button.setImage(icon, for: .normal)
         button.accessibilityIdentifier = "CounterClockwiseRotationButton"
         button.accessibilityLabel = LocalizedHelper.getString("Mantis.CounterClockwise rotation", value: "CounterClockwise rotation")
+        button.addHoverHighlightStyleCompat()
         return button
     }()
 
@@ -34,6 +35,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         button.setImage(icon, for: .normal)
         button.accessibilityIdentifier = "ClockwiseRotationButton"
         button.accessibilityLabel = LocalizedHelper.getString("Mantis.Clockwise rotation", value: "Clockwise rotation")
+        button.addHoverHighlightStyleCompat()
         return button
     }()
 
@@ -43,6 +45,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         button.setImage(icon, for: .normal)
         button.accessibilityIdentifier = "AlterCropper90DegreeButton"
         button.accessibilityLabel = LocalizedHelper.getString("Mantis.Alter cropper by 90 degrees", value: "Alter cropper by 90 degrees")
+        button.addHoverHighlightStyleCompat()
         return button
     }()
     
@@ -52,6 +55,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         button.setImage(icon, for: .normal)
         button.accessibilityIdentifier = "HorizontallyFlipButton"
         button.accessibilityLabel = LocalizedHelper.getString("Mantis.Horizontally flip", value: "Horizontally flip")
+        button.addHoverHighlightStyleCompat()
         return button
     }()
     
@@ -61,6 +65,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         button.setImage(icon, for: .normal)
         button.accessibilityIdentifier = "VerticallyFlipButton"
         button.accessibilityLabel = LocalizedHelper.getString("Mantis.Vertically flip", value: "Vertically flip")
+        button.addHoverHighlightStyleCompat()
         return button
     }()
     
@@ -70,6 +75,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         button.setImage(icon, for: .normal)
         button.accessibilityIdentifier = "AutoAdjustButton"
         button.accessibilityLabel = LocalizedHelper.getString("Mantis.Auto adjust", value: "Auto adjust")
+        button.addHoverHighlightStyleCompat()
         return button
     }()
 
@@ -80,6 +86,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         if let icon = iconProvider?.getCancelIcon() {
             let button = createOptionButton(withTitle: nil, andAction: #selector(cancel))
             button.setImage(icon, for: .normal)
+            button.addHoverHighlightStyleCompat()
             return button
         }
 
@@ -89,6 +96,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         let button = createOptionButton(withTitle: cancelText, andAction: #selector(cancel))
         button.accessibilityIdentifier = "CancelButton"
         button.accessibilityLabel = cancelText
+        button.addHoverHighlightStyleCompat()
         return button
     }()
 
@@ -96,6 +104,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         if let icon = iconProvider?.getCropIcon() {
             let button = createOptionButton(withTitle: nil, andAction: #selector(crop))
             button.setImage(icon, for: .normal)
+            button.addHoverHighlightStyleCompat()
             return button
         }
         
@@ -103,6 +112,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         let button = createOptionButton(withTitle: doneText, andAction: #selector(crop))
         button.accessibilityIdentifier = "DoneButton"
         button.accessibilityLabel = doneText
+        button.addHoverHighlightStyleCompat()
         return button
     }()
 
@@ -356,7 +366,7 @@ extension CropToolbar {
         
         button.isAccessibilityElement = true
         button.accessibilityTraits = .button
-
+        button.addHoverHighlightStyleCompat()
         return button
     }
 
@@ -372,6 +382,7 @@ extension CropToolbar {
         
         button.accessibilityIdentifier = "ResetButton"
         button.accessibilityLabel = LocalizedHelper.getString("Mantis.Reset", value: "Reset")
+        button.addHoverHighlightStyleCompat()
         return button
     }
     
@@ -381,6 +392,7 @@ extension CropToolbar {
         button.setImage(icon, for: .normal)
         button.accessibilityIdentifier = "RatioButton"
         button.accessibilityLabel = LocalizedHelper.getString("Mantis.Aspect ratio", value: "Aspect ratio")
+        button.addHoverHighlightStyleCompat()
         return button
     }
 
