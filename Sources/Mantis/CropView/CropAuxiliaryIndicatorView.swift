@@ -25,7 +25,7 @@ final class CropAuxiliaryIndicatorView: UIView, CropAuxiliaryIndicatorViewProtoc
     
     var cropBoxHotAreaUnit: CGFloat = 42
     
-    var gridHidden = true {
+    var innerGridHidden = false {
         didSet {
             setNeedsDisplay()
         }
@@ -109,29 +109,31 @@ final class CropAuxiliaryIndicatorView: UIView, CropAuxiliaryIndicatorViewProtoc
     }
     
     override func draw(_ rect: CGRect) {
-        if !gridHidden {
-            let indicatorLineNumber = gridLineNumberType.getIndicatorLineNumber()
-            
-            for index in 0..<indicatorLineNumber {
-                if gridLineNumberType == .rotate && (index + 1) % 3 != 0 {
+        let indicatorLineNumber = gridLineNumberType.getIndicatorLineNumber()
+        
+        for index in 0..<indicatorLineNumber {
+            if gridLineNumberType == .rotate && (index + 1) % 3 != 0 {
+                if !innerGridHidden {
                     gridSecondaryColor.setStroke()
                 } else {
-                    gridMainColor.setStroke()
+                    UIColor.clear.setStroke()
                 }
-                
-                let indicatorLinePath = UIBezierPath()
-                indicatorLinePath.lineWidth = 1
-                
-                let horizontalY = CGFloat(index + 1) * frame.height / CGFloat(indicatorLineNumber + 1)
-                indicatorLinePath.move(to: CGPoint(x: 0, y: horizontalY))
-                indicatorLinePath.addLine(to: CGPoint(x: frame.width, y: horizontalY))
-                
-                let horizontalX = CGFloat(index + 1) * frame.width / CGFloat(indicatorLineNumber + 1)
-                indicatorLinePath.move(to: CGPoint(x: horizontalX, y: 0))
-                indicatorLinePath.addLine(to: CGPoint(x: horizontalX, y: frame.height))
-                
-                indicatorLinePath.stroke()
+            } else {
+                gridMainColor.setStroke()
             }
+            
+            let indicatorLinePath = UIBezierPath()
+            indicatorLinePath.lineWidth = 1
+            
+            let horizontalY = CGFloat(index + 1) * frame.height / CGFloat(indicatorLineNumber + 1)
+            indicatorLinePath.move(to: CGPoint(x: 0, y: horizontalY))
+            indicatorLinePath.addLine(to: CGPoint(x: frame.width, y: horizontalY))
+            
+            let horizontalX = CGFloat(index + 1) * frame.width / CGFloat(indicatorLineNumber + 1)
+            indicatorLinePath.move(to: CGPoint(x: horizontalX, y: 0))
+            indicatorLinePath.addLine(to: CGPoint(x: horizontalX, y: frame.height))
+            
+            indicatorLinePath.stroke()
         }
     }
     
@@ -233,7 +235,7 @@ final class CropAuxiliaryIndicatorView: UIView, CropAuxiliaryIndicatorViewProtoc
         
         self.tappedEdge = tappedEdge
         
-        gridHidden = false
+        innerGridHidden = false
         gridLineNumberType = .crop
         
         func handleHintLine() {
@@ -275,7 +277,7 @@ final class CropAuxiliaryIndicatorView: UIView, CropAuxiliaryIndicatorViewProtoc
     }
     
     func handleEdgeUntouched() {
-        gridHidden = true
+        innerGridHidden = true
         hintLine.removeFromSuperview()
         tappedEdge = .none
     }

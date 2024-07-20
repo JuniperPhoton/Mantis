@@ -128,15 +128,12 @@ private func buildCropWorkbenchView(with cropViewConfig: CropViewConfig, and ima
 
 private func buildCropMaskViewManager(with cropViewConfig: CropViewConfig) -> CropMaskViewManagerProtocol {
     let dimmingView = CropDimmingView(cropShapeType: cropViewConfig.cropShapeType)
-    let visualEffectView = CropMaskVisualEffectView(cropShapeType: cropViewConfig.cropShapeType,
-                                                    effectType: cropViewConfig.cropMaskVisualEffectType)
     
     if let color = cropViewConfig.backgroundColor {
         dimmingView.overLayerFillColor = color.cgColor
-        visualEffectView.overLayerFillColor = color.cgColor
     }
     
-    return CropMaskViewManager(dimmingView: dimmingView, visualEffectView: visualEffectView)
+    return CropMaskViewManager(dimmingView: dimmingView)
 }
 
 private func setupRotationControlViewIfNeeded(withConfig cropViewConfig: CropViewConfig,

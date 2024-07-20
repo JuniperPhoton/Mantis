@@ -21,7 +21,7 @@ final class CropDimmingView: UIView, CropMaskProtocol {
     
     func setMask(cropRatio: CGFloat) {
         maskLayer?.removeFromSuperlayer()
-        maskLayer = createMaskLayer(opacity: 0.5, cropRatio: cropRatio)
+        maskLayer = createMaskLayer(opacity: 1.0, cropRatio: cropRatio)
         layer.addSublayer(maskLayer!)
     }
 }
