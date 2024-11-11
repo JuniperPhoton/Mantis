@@ -10,14 +10,18 @@ let package = Package(
     products: [
         .library(
             name: "Mantis",
-            targets: ["Mantis"])
+            targets: ["Mantis", "MantisUtils"]
+        ),
+        .library(name: "MantisUtils", targets: ["MantisUtils"])
     ],
     targets: [
         .target(
             name: "Mantis",
+            dependencies: ["MantisUtils"],
             exclude: ["Info.plist", "Resources/Info.plist"],
             resources: [.process("Resources")],
             swiftSettings: [.define("MANTIS_SPM")]
-        )
+        ),
+        .target(name: "MantisUtils")
     ]
 )
