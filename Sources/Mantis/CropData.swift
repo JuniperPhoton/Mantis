@@ -44,13 +44,13 @@ public struct CropRegion: Equatable {
 }
 
 public typealias CropInfo = (
-    translation: CGPoint,
+    translation: CGPoint, // The translation of the new Rect's center to the original Rect's center
     rotation: CGFloat,
     scaleX: CGFloat,
     scaleY: CGFloat,
     cropSize: CGSize,
     imageViewSize: CGSize,
-    cropRegion: CropRegion
+    cropRegion: CropRegion // The 4 corners of the crop rectangle. The original point is in the top left. The maximum value is the bottom right.
 )
 
 typealias CropOutput = (

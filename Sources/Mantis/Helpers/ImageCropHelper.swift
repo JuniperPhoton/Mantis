@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreGraphics
+import CoreImage
 
 /// A helper class to crop image off screen.
 public class ImageCropHelper {
@@ -16,7 +17,7 @@ public class ImageCropHelper {
         // empty
     }
     
-    public func crop(with cgImage: CGImage, cropInfo: CropInfo) -> CGImage? {
+    public func crop(cgImage: CGImage, cropInfo: CropInfo) -> CGImage? {
         var transform = CGAffineTransform.identity
         transform.transformed(by: cropInfo)
         
@@ -45,6 +46,11 @@ public class ImageCropHelper {
             
             return nil
         }
+    }
+    
+    @available(*, deprecated, message: "Use crop(cgImage:cropInfo:) instead")
+    public func crop(with cgImage: CGImage, cropInfo: CropInfo) -> CGImage? {
+        return crop(cgImage: cgImage, cropInfo: cropInfo)
     }
     
     func getOutputCropImageSize(size: CGSize, by cropInfo: CropInfo) -> CGSize {
