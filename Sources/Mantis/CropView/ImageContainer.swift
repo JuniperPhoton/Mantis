@@ -24,6 +24,9 @@ final class ImageContainer: UIView {
     
     init(image: UIImage) {
         super.init(frame: .zero)
+        if #available(iOS 18.0, *), image.isHighDynamicRange {
+            imageView.preferredImageDynamicRange = .high
+        }
         imageView.image = image
     }
     
