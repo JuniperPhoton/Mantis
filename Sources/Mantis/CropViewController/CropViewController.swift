@@ -66,6 +66,14 @@ open class CropViewController: UIViewController {
         super.init(coder: aDecoder)
     }
     
+    public func setUseHighDynamicRange(_ useHighDynamicRange: Bool) {
+        guard let cropViewInstance = self.cropView as? CropView else { return }
+        guard let imageContainerInstance = cropViewInstance.imageContainer as? ImageContainer else { return }
+        if #available(iOS 18.0, *) {
+            imageContainerInstance.imageView.preferredImageDynamicRange = useHighDynamicRange ? .high : .standard
+        }
+    }
+    
     private func createRatioSelector() {
         let fixedRatioManager = getFixedRatioManager()
         ratioSelector = RatioSelector(type: fixedRatioManager.type,

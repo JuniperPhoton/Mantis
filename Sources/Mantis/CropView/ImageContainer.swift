@@ -9,7 +9,7 @@
 import UIKit
 
 final class ImageContainer: UIView {
-    lazy private var imageView: UIImageView = {
+    lazy private(set) var imageView: UIImageView = {
         let imageView = UIImageView(frame: bounds)
         addSubview(imageView)
         
