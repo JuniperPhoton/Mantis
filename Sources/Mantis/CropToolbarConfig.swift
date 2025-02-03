@@ -8,6 +8,18 @@
 import UIKit
 
 public struct CropToolbarConfig {
+    public struct BackgroundShapeConfig {
+        public static let empty = BackgroundShapeConfig(corners: [], radius: 0)
+        
+        public let corners: UIRectCorner
+        public let radius: CGFloat
+        
+        public init(corners: UIRectCorner, radius: CGFloat) {
+            self.corners = corners
+            self.radius = radius
+        }
+    }
+    
     public var heightForVerticalOrientation: CGFloat = 44 {
         didSet {
             assert(heightForVerticalOrientation >= 44)
@@ -20,11 +32,8 @@ public struct CropToolbarConfig {
         }
     }
     
-    /**
-     The color settings are not for Mac Catalyst (Optimize Interface for Mac) for now
-     I haven't figured out a correct way to set button title color for this scenario
-     */
     public var backgroundColor: UIColor = .black
+    public var backgroundShapeConfig: BackgroundShapeConfig = .empty
     public var foregroundColor: UIColor = .white
     
     public var toolbarButtonOptions: ToolbarButtonOptions = .default
