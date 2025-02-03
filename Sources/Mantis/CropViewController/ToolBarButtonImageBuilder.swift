@@ -31,9 +31,17 @@ import UIKit
 struct ToolBarButtonImageBuilder {
     static let defaultWeight = UIImage.SymbolWeight.semibold
     
+    private static func createConfiguration(weight: UIImage.SymbolWeight) -> UIImage.SymbolConfiguration {
+        let configuration = UIImage.SymbolConfiguration(
+            pointSize: UIFont.preferredFont(forTextStyle: .callout).pointSize,
+            weight: weight
+        )
+        return configuration
+    }
+    
     static func rotateCCWImage(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
         if #available(macCatalyst 13.1, iOS 13.0, *) {
-            return UIImage(systemName: "rotate.left", withConfiguration: UIImage.SymbolConfiguration(weight: weight))
+            return UIImage(systemName: "rotate.left", withConfiguration: createConfiguration(weight: weight))
         }
         
         return drawRotateCCWImage()
@@ -41,7 +49,7 @@ struct ToolBarButtonImageBuilder {
     
     static func rotateCWImage(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
         if #available(macCatalyst 13.1, iOS 13.0, *) {
-            return UIImage(systemName: "rotate.right", withConfiguration: UIImage.SymbolConfiguration(weight: weight))
+            return UIImage(systemName: "rotate.right", withConfiguration: createConfiguration(weight: weight))
         }
         
         return drawRotateCWImage()
@@ -49,7 +57,7 @@ struct ToolBarButtonImageBuilder {
     
     static func flipHorizontally(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
         if #available(macCatalyst 13.1, iOS 13.0, *) {
-            return UIImage(systemName: "flip.horizontal", withConfiguration: UIImage.SymbolConfiguration(weight: weight))
+            return UIImage(systemName: "flip.horizontal", withConfiguration: createConfiguration(weight: weight))
         }
         
         return drawFlipHorizontally()
@@ -57,7 +65,10 @@ struct ToolBarButtonImageBuilder {
     
     static func flipVertically(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
         if #available(macCatalyst 13.1, iOS 13.0, *) {
-            return UIImage(systemName: "arrow.up.and.down.righttriangle.up.righttriangle.down", withConfiguration: UIImage.SymbolConfiguration(weight: weight))
+            return UIImage(
+                systemName: "arrow.up.and.down.righttriangle.up.righttriangle.down",
+                withConfiguration: createConfiguration(weight: weight)
+            )
         }
         
         return drawFlipVertically()
@@ -65,7 +76,7 @@ struct ToolBarButtonImageBuilder {
     
     static func clampImage(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
         if #available(macCatalyst 13.1, iOS 13.0, *) {
-            return UIImage(systemName: "aspectratio", withConfiguration: UIImage.SymbolConfiguration(weight: weight))
+            return UIImage(systemName: "aspectratio", withConfiguration: createConfiguration(weight: weight))
         }
         
         return drawClampImage()
@@ -73,7 +84,7 @@ struct ToolBarButtonImageBuilder {
     
     static func resetImage(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
         if #available(macCatalyst 13.1, iOS 13.0, *) {
-            return UIImage(systemName: "arrow.2.circlepath", withConfiguration: UIImage.SymbolConfiguration(weight: weight))
+            return UIImage(systemName: "arrow.2.circlepath", withConfiguration: createConfiguration(weight: weight))
         }
         
         return drawResetImage()
@@ -85,7 +96,7 @@ struct ToolBarButtonImageBuilder {
     
     static func horizontallyFlipImage(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
         if #available(macCatalyst 13.1, iOS 13.0, *) {
-            return UIImage(systemName: "flip.horizontal", withConfiguration: UIImage.SymbolConfiguration(weight: weight))
+            return UIImage(systemName: "flip.horizontal", withConfiguration: createConfiguration(weight: weight))
         }
         
         return nil
@@ -115,7 +126,7 @@ struct ToolBarButtonImageBuilder {
     
     static func autoAdjustImage(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
         if #available(macCatalyst 13.1, iOS 13.0, *) {
-            return UIImage(systemName: "camera.metering.none", withConfiguration: UIImage.SymbolConfiguration(weight: weight))
+            return UIImage(systemName: "camera.metering.none", withConfiguration: createConfiguration(weight: weight))
         }
         
         return nil
