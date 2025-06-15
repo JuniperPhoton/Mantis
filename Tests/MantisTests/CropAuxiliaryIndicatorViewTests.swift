@@ -100,7 +100,7 @@ final class CropAuxiliaryIndicatorViewTests: XCTestCase {
         XCTAssertEqual(cropAuxiliaryIndicatorView.subviews.count, subviewCount + 1)
 
         cropAuxiliaryIndicatorView.handleEdgeUntouched()
-        XCTAssertTrue(cropAuxiliaryIndicatorView.gridHidden)
+        XCTAssertTrue(cropAuxiliaryIndicatorView.innerGridHidden)
         XCTAssertEqual(cropAuxiliaryIndicatorView.subviews.count, subviewCount)
     }
 }

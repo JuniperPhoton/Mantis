@@ -22,6 +22,7 @@ let package = Package(
             resources: [.process("Resources")],
             swiftSettings: [.define("MANTIS_SPM")]
         ),
-        .target(name: "MantisUtils")
+        .target(name: "MantisUtils"),
+        .testTarget(name: "MantisTests", dependencies: ["Mantis", "MantisUtils"])
     ]
 )

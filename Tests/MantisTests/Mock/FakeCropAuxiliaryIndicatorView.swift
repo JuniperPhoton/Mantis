@@ -9,6 +9,8 @@ import UIKit
 @testable import Mantis
 
 class FakeCropAuxiliaryIndicatorView: UIView, CropAuxiliaryIndicatorViewProtocol {
+    var innerGridHidden: Bool = false
+    
     var cropBoxHotAreaUnit: CGFloat = 42
     
     var gridLineNumberType: GridLineNumberType = .none
