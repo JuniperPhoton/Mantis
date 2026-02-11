@@ -13,6 +13,7 @@ public class AspectRatioNumberFormatter {
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         formatter.numberStyle = .decimal
+        formatter.locale = Locale(identifier: "en_US")
         return formatter
     }()
     
