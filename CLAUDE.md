@@ -1,0 +1,1 @@
+Mantis is a Swift package that provides a full-featured, customizable image cropping UI for iOS and macOS. It works similarly to the system Photos crop editor: users can pan, pinch-to-zoom, rotate, and drag crop handles on an image, then confirm or cancel the crop.
