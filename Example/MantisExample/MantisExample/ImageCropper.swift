@@ -7,6 +7,7 @@
 
 import Mantis
 import SwiftUI
+import CoreImage
 
 enum ImageCropperType {
     case normal
@@ -19,31 +20,39 @@ struct ImageCropper: UIViewControllerRepresentable {
     @Binding var cropShapeType: Mantis.CropShapeType
     @Binding var presetFixedRatioType: Mantis.PresetFixedRatioType
     @Binding var type: ImageCropperType
-    
-    @Environment(\.presentationMode) var presentationMode
-    
+
+    @Environment(\.dismiss) var dismiss
+
     class Coordinator: CropViewControllerDelegate {
         var parent: ImageCropper
-        
+
         init(_ parent: ImageCropper) {
             self.parent = parent
         }
-        
-        func cropViewControllerDidCrop(_ cropViewController: Mantis.CropViewController, cropped: UIImage, transformation: Transformation, cropInfo: CropInfo) {
-            parent.image = cropped
+
+        func cropViewControllerDidCrop(
+            _ cropViewController: Mantis.CropViewController,
+            cropped: CIImage,
+            transformation: Transformation,
+            cropInfo: CropInfo
+        ) {
+            // Render CIImage to UIImage for display/storage
+            if let cgImage = CIContext().createCGImage(cropped, from: cropped.extent) {
+                parent.image = UIImage(cgImage: cgImage)
+            }
             print("transformation is \(transformation)")
-            parent.presentationMode.wrappedValue.dismiss()
+            parent.dismiss()
         }
-        
-        func cropViewControllerDidCancel(_ cropViewController: Mantis.CropViewController, original: UIImage) {
-            parent.presentationMode.wrappedValue.dismiss()
+
+        func cropViewControllerDidCancel(_ cropViewController: Mantis.CropViewController, original: CIImage) {
+            parent.dismiss()
         }
     }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-    
+
     func makeUIViewController(context: Context) -> UIViewController {
         switch type {
         case .normal:
@@ -54,38 +63,40 @@ struct ImageCropper: UIViewControllerRepresentable {
             return makeImageCropperWithoutAttachedToolbar(context: context)
         }
     }
-    
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        
-    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
 extension ImageCropper {
+    private func ciImage(from uiImage: UIImage?) -> CIImage {
+        guard let uiImage else { return CIImage.empty() }
+        let raw = CIImage(image: uiImage) ?? CIImage.empty()
+        return raw.oriented(CGImagePropertyOrientation(uiImage.imageOrientation))
+    }
+
     func makeNormalImageCropper(context: Context) -> UIViewController {
         var config = Mantis.Config()
         config.cropViewConfig.cropShapeType = cropShapeType
         config.presetFixedRatioType = presetFixedRatioType
-        let cropViewController = Mantis.cropViewController(image: image!,
+        let cropViewController = Mantis.cropViewController(image: ciImage(from: image),
                                                            config: config)
         cropViewController.delegate = context.coordinator
         return cropViewController
     }
-    
+
     func makeImageCropperHiddingRotationDial(context: Context) -> UIViewController {
         var config = Mantis.Config()
-        config.cropViewConfig.showRotationDial = false
-        let cropViewController = Mantis.cropViewController(image: image!, config: config)
+        config.cropViewConfig.showAttachedRotationControlView = false
+        let cropViewController = Mantis.cropViewController(image: ciImage(from: image), config: config)
         cropViewController.delegate = context.coordinator
-
         return cropViewController
     }
-    
+
     func makeImageCropperWithoutAttachedToolbar(context: Context) -> UIViewController {
         var config = Mantis.Config()
         config.showAttachedCropToolbar = false
-        let cropViewController: CustomViewController = Mantis.cropViewController(image: image!, config: config)
+        let cropViewController: CustomViewController = Mantis.cropViewController(image: ciImage(from: image), config: config)
         cropViewController.delegate = context.coordinator
-
         return UINavigationController(rootViewController: cropViewController)
     }
 }

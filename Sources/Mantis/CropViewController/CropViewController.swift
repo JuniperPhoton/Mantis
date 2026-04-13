@@ -65,13 +65,11 @@ open class CropViewController: UIViewController {
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
-    
-    public func setUseHighDynamicRange(_ useHighDynamicRange: Bool) {
-        guard let cropViewInstance = self.cropView as? CropView else { return }
-        guard let imageContainerInstance = cropViewInstance.imageContainer as? ImageContainer else { return }
-        if #available(iOS 18.0, *) {
-            imageContainerInstance.imageView.preferredImageDynamicRange = useHighDynamicRange ? .high : .standard
-        }
+
+    /// Replaces the displayed image without resetting the current crop state.
+    /// Use this to apply Core Image filters and reflect the result in real time.
+    public func updateImage(_ image: CIImage) {
+        cropView.updateImage(image)
     }
     
     private func createRatioSelector() {
@@ -494,7 +492,7 @@ extension CropViewController {
         }
     }
     
-    public func process(_ image: UIImage) -> UIImage? {
+    public func process(_ image: CIImage) -> CIImage? {
         return cropView.crop(image).croppedImage
     }
     

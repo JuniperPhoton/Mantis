@@ -23,6 +23,7 @@
 //  IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import UIKit
+import CoreImage
 
 public typealias Transformation = (
     offset: CGPoint,
@@ -54,7 +55,7 @@ public typealias CropInfo = (
 )
 
 typealias CropOutput = (
-    croppedImage: UIImage?,
+    croppedImage: CIImage?,
     transformation: Transformation,
     cropInfo: CropInfo
 )

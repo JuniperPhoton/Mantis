@@ -48,11 +48,6 @@ public class ImageCropHelper {
         }
     }
     
-    @available(*, deprecated, message: "Use crop(cgImage:cropInfo:) instead")
-    public func crop(with cgImage: CGImage, cropInfo: CropInfo) -> CGImage? {
-        return crop(cgImage: cgImage, cropInfo: cropInfo)
-    }
-    
     func getOutputCropImageSize(size: CGSize, by cropInfo: CropInfo) -> CGSize {
         let zoomScaleX = abs(cropInfo.scaleX)
         let zoomScaleY = abs(cropInfo.scaleY)

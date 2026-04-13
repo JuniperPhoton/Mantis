@@ -9,13 +9,17 @@ import UIKit
 @testable import Mantis
 
 class FakeCropView: UIView, CropViewProtocol {
-    var image = UIImage()
+    var image: CIImage = CIImage()
     
     var aspectRatioLockEnabled = false
     
     var delegate: CropViewDelegate?
     
     func initialSetup(delegate: CropViewDelegate, presetFixedRatioType: PresetFixedRatioType) {
+    }
+    
+    func updateImage(_ image: CIImage) {
+        
     }
     
     func getRatioType(byImageIsOriginalHorizontal isHorizontal: Bool) -> RatioType {
@@ -37,7 +41,7 @@ class FakeCropView: UIView, CropViewProtocol {
     func handleViewWillTransition() {
         
     }
-
+    
     func setFixedRatio(_ ratio: Double, zoom: Bool, presetFixedRatioType: PresetFixedRatioType) {
         
     }
@@ -100,7 +104,7 @@ class FakeCropView: UIView, CropViewProtocol {
                                        bottomRight: .zero)))
     }
     
-    func crop(_ image: UIImage) -> CropOutput {
+    func crop(_ image: CIImage) -> CropOutput {
         CropOutput(nil,
                    Transformation(.zero, .zero, .zero, false, .zero, .zero, .zero, false, false),
                    CropInfo(.zero, .zero, .zero, .zero, .zero, .zero,

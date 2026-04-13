@@ -6,6 +6,23 @@
 //
 
 import UIKit
+import CoreImage
+
+public extension CGImagePropertyOrientation {
+    init(_ uiOrientation: UIImage.Orientation) {
+        switch uiOrientation {
+        case .up:            self = .up
+        case .down:          self = .down
+        case .left:          self = .left
+        case .right:         self = .right
+        case .upMirrored:    self = .upMirrored
+        case .downMirrored:  self = .downMirrored
+        case .leftMirrored:  self = .leftMirrored
+        case .rightMirrored: self = .rightMirrored
+        @unknown default:    self = .up
+        }
+    }
+}
 
 extension UIImage {
     func cgImageWithFixedOrientation() -> CGImage? {
@@ -86,7 +103,7 @@ extension UIImage {
             return nil
         }
         
-        guard let transformedCGImage = ImageCropHelper.shared.crop(with: fixedOrientationImage, cropInfo: cropInfo) else {
+        guard let transformedCGImage = ImageCropHelper.shared.crop(cgImage: fixedOrientationImage, cropInfo: cropInfo) else {
             return nil
         }
         
@@ -95,6 +112,22 @@ extension UIImage {
     
     func getOutputCropImageSize(by cropInfo: CropInfo) -> CGSize {
         return ImageCropHelper.shared.getOutputCropImageSize(size: size, by: cropInfo)
+    }
+}
+
+extension CIImage {
+    func isHorizontal() -> Bool {
+        extent.width > extent.height
+    }
+
+    func crop(by cropInfo: CropInfo) -> CIImage? {
+        guard let cgImage = CIContext().createCGImage(self, from: extent) else { return nil }
+        guard let croppedUIImage = UIImage(cgImage: cgImage).crop(by: cropInfo) else { return nil }
+        return CIImage(image: croppedUIImage)
+    }
+
+    func getOutputCropImageSize(by cropInfo: CropInfo) -> CGSize {
+        ImageCropHelper.shared.getOutputCropImageSize(size: extent.size, by: cropInfo)
     }
 }
 

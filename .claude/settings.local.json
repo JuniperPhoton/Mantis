@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(swift build *)",
+      "Bash(xcodebuild -project /Users/juniperphoton/Dev/AllApps/Mantis/Mantis.xcodeproj -scheme Mantis -destination \"generic/platform=iOS Simulator\" -configuration Debug build)",
+      "Bash(xcodebuild -workspace /Users/juniperphoton/Dev/AllApps/Mantis/Example/MantisExample/MantisExample.xcodeproj -list)",
+      "Bash(xcodebuild -project /Users/juniperphoton/Dev/AllApps/Mantis/Example/MantisExample/MantisExample.xcodeproj -list)",
+      "Bash(xcodebuild -project /Users/juniperphoton/Dev/AllApps/Mantis/Example/MantisExample/MantisExample.xcodeproj -scheme MantisExample -destination \"generic/platform=iOS Simulator\" -configuration Debug build)"
+    ]
+  }
+}
