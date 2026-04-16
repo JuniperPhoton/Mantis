@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l /Users/juniperphoton/Dev/AllApps/Mantis/Sources/Mantis/**/*.swift)",
+      "Bash(xcodebuild -scheme Mantis -destination 'platform=iOS Simulator,name=iPhone 16' clean build)",
+      "Bash(xcodebuild -scheme Mantis -destination 'id:8278CAEB-B3F5-4599-ADC9-B36AF14BF95C' clean build)",
+      "Bash(xcodebuild -scheme Mantis -sdk iphonesimulator -destination \"platform=iOS Simulator,name=iPhone 16\" clean build)",
+      "Bash(xcodebuild -scheme Mantis -sdk iphonesimulator clean build)",
+      "Bash(ls /Users/juniperphoton/Dev/AllApps/Mantis/*.xcworkspace /Users/juniperphoton/Dev/AllApps/Mantis/*.xcodeproj)",
+      "Bash(xcodebuild -project /Users/juniperphoton/Dev/AllApps/Mantis/Example/MantisExample/MantisExample.xcodeproj -scheme MantisExample -sdk iphonesimulator build)",
+      "Bash(xcrun simctl:*)",
+      "Bash(xcodebuild test:*)",
+      "Bash(xcodebuild -project /Users/juniperphoton/Dev/AllApps/Mantis/Example/MantisExample/MantisExample.xcodeproj -list)"
+    ]
+  }
+}

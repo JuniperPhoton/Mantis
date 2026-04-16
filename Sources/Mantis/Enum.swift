@@ -55,34 +55,6 @@ public enum CropShapeType: Hashable {
      and presetFixedRatioType = .alwaysUsingOnePresetFixedRatio(ratio: 1)
      */
     case square
-
-    /**
-     When maskOnly is true, the cropped image is kept rect
-     */
-    case ellipse(maskOnly: Bool = false)
-
-    /**
-      The ratio of the crop mask will always be 1:1 and when maskOnly is true, the cropped image is kept rect.
-     ### Notice
-     It equals cropShapeType = .ellipse and presetFixedRatioType = .alwaysUsingOnePresetFixedRatio(ratio: 1)
-     */
-    case circle(maskOnly: Bool = false)
-
-    /**
-     When maskOnly is true, the cropped image is kept rect
-     */
-    case roundedRect(radiusToShortSide: CGFloat, maskOnly: Bool = false)
-
-    case diamond(maskOnly: Bool = false)
-
-    case heart(maskOnly: Bool = false)
-
-    case polygon(sides: Int, offset: CGFloat = 0, maskOnly: Bool = false)
-
-    /**
-      Each point should have normalized values whose range is 0...1
-     */
-    case path(points: [CGPoint], maskOnly: Bool = false)
     
     public func hash(into hasher: inout Hasher) {
         switch self {
@@ -90,34 +62,6 @@ public enum CropShapeType: Hashable {
             hasher.combine(0)
         case .square:
             hasher.combine(1)
-        case .ellipse(let maskOnly):
-            hasher.combine(2)
-            hasher.combine(maskOnly)
-        case .circle(let maskOnly):
-            hasher.combine(3)
-            hasher.combine(maskOnly)
-        case .roundedRect(let radiusToShortSide, let maskOnly):
-            hasher.combine(4)
-            hasher.combine(radiusToShortSide)
-            hasher.combine(maskOnly)
-        case .diamond(let maskOnly):
-            hasher.combine(5)
-            hasher.combine(maskOnly)
-        case .heart(let maskOnly):
-            hasher.combine(6)
-            hasher.combine(maskOnly)
-        case .polygon(let sides, let offset, let maskOnly):
-            hasher.combine(7)
-            hasher.combine(sides)
-            hasher.combine(offset)
-            hasher.combine(maskOnly)
-        case .path(let points, let maskOnly):
-            hasher.combine(8)
-            for point in points {
-                hasher.combine(point.x)
-                hasher.combine(point.y)
-            }
-            hasher.combine(maskOnly)
         }
     }
 }

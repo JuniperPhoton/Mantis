@@ -25,7 +25,40 @@
 import UIKit
 
 // MARK: - APIs
+
 public func cropViewController(image: UIImage,
+                               config: Mantis.Config = Mantis.Config(),
+                               cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
+                               rotationControlView: RotationControlViewProtocol? = nil) -> Mantis.CropViewController {
+    cropViewController(image: image.orientationCorrectedCIImage() ?? CIImage(),
+                       config: config,
+                       cropToolbar: cropToolbar,
+                       rotationControlView: rotationControlView)
+}
+
+public func cropViewController<T: CropViewController>(image: UIImage,
+                                                      config: Mantis.Config = Mantis.Config(),
+                                                      cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
+                                                      rotationControlView: RotationControlViewProtocol? = nil) -> T {
+    cropViewController(image: image.orientationCorrectedCIImage() ?? CIImage(),
+                       config: config,
+                       cropToolbar: cropToolbar,
+                       rotationControlView: rotationControlView)
+}
+
+public func setupCropViewController(_ cropViewController: Mantis.CropViewController,
+                                    with image: UIImage,
+                                    and config: Mantis.Config = Mantis.Config(),
+                                    cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
+                                    rotationControlView: RotationControlViewProtocol? = nil) {
+    setupCropViewController(cropViewController,
+                            with: image.orientationCorrectedCIImage() ?? CIImage(),
+                            and: config,
+                            cropToolbar: cropToolbar,
+                            rotationControlView: rotationControlView)
+}
+
+public func cropViewController(image: CIImage,
                                config: Mantis.Config = Mantis.Config(),
                                cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
                                rotationControlView: RotationControlViewProtocol? = nil) -> Mantis.CropViewController {
@@ -37,7 +70,7 @@ public func cropViewController(image: UIImage,
     return cropViewController
 }
 
-public func cropViewController<T: CropViewController>(image: UIImage,
+public func cropViewController<T: CropViewController>(image: CIImage,
                                                       config: Mantis.Config = Mantis.Config(),
                                                       cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
                                                       rotationControlView: RotationControlViewProtocol? = nil) -> T {
@@ -50,7 +83,7 @@ public func cropViewController<T: CropViewController>(image: UIImage,
 }
 
 public func setupCropViewController(_ cropViewController: Mantis.CropViewController,
-                                    with image: UIImage,
+                                    with image: CIImage,
                                     and config: Mantis.Config = Mantis.Config(),
                                     cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
                                     rotationControlView: RotationControlViewProtocol? = nil) {
@@ -63,10 +96,6 @@ public func setupCropViewController(_ cropViewController: Mantis.CropViewControl
 
 public func locateResourceBundle(by hostClass: AnyClass) {
     LocalizedHelper.setBundle(Bundle(for: hostClass))
-}
-
-public func crop(image: UIImage, by cropInfo: CropInfo) -> UIImage? {
-    return image.crop(by: cropInfo)
 }
 
 public struct Language {
@@ -93,7 +122,7 @@ private(set) var bundle: Bundle? = {
     return Mantis.Config.bundle
 }()
 
-private func buildCropView(withImage image: UIImage,
+private func buildCropView(withImage image: CIImage,
                            config cropViewConfig: CropViewConfig,
                            rotationControlView: RotationControlViewProtocol?) -> CropViewProtocol {
     let cropAuxiliaryIndicatorView = CropAuxiliaryIndicatorView(frame: .zero,

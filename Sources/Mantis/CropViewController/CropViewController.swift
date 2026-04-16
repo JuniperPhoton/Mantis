@@ -51,14 +51,6 @@ open class CropViewController: UIViewController {
 
     required public init(config: Mantis.Config = Mantis.Config()) {
         self.config = config
-
-        switch config.cropViewConfig.cropShapeType {
-        case .circle, .square, .heart:
-            self.config.presetFixedRatioType = .alwaysUsingOnePresetFixedRatio(ratio: 1)
-        default:
-            break
-        }
-
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -67,11 +59,10 @@ open class CropViewController: UIViewController {
     }
     
     public func setUseHighDynamicRange(_ useHighDynamicRange: Bool) {
-        guard let cropViewInstance = self.cropView as? CropView else { return }
-        guard let imageContainerInstance = cropViewInstance.imageContainer as? ImageContainer else { return }
-        if #available(iOS 18.0, *) {
-            imageContainerInstance.imageView.preferredImageDynamicRange = useHighDynamicRange ? .high : .standard
-        }
+        // With Metal rendering the CIContext and MTKView pixel format manage dynamic
+        // range natively; no additional configuration is required here.
+        // The parameter is kept for API compatibility.
+        // todo
     }
     
     private func createRatioSelector() {
@@ -148,6 +139,15 @@ open class CropViewController: UIViewController {
         initLayout()
         updateLayout()
         showImageAutoAdjustStatusIfNeeded()
+    }
+    
+    public func updateImage(_ image: CIImage) {
+        cropView.image = image
+    }
+
+    public func updateImage(_ image: UIImage) {
+        guard let ciImage = image.orientationCorrectedCIImage() else { return }
+        updateImage(ciImage)
     }
     
     func showImageAutoAdjustStatusIfNeeded() {
@@ -394,7 +394,6 @@ extension CropViewController {
 extension CropViewController: CropViewDelegate {    
     func cropViewDidBecomeResettable(_ cropView: CropViewProtocol) {
         cropToolbar.handleCropViewDidBecomeResettable()
-        delegate?.cropViewControllerDidImageTransformed(self)
         delegate?.cropViewControllerDidImageTransformed(self, transformation: cropView.makeTransformation())
         delegate?.cropViewController(self, didBecomeResettable: true)
     }
@@ -475,10 +474,10 @@ extension CropViewController {
     public func crop() {
         switch config.cropMode {
         case .sync:
-            let cropOutput = cropView.crop()
+            let cropOutput = cropView.crop(ciContext: CIContext())
             handleCropOutput(cropOutput)
         case .async:
-            cropView.asyncCrop(completion: handleCropOutput)
+            cropView.asyncCrop(ciContext: CIContext(), completion: handleCropOutput)
         }
         
         func handleCropOutput(_ cropOutput: CropOutput) {
@@ -494,8 +493,8 @@ extension CropViewController {
         }
     }
     
-    public func process(_ image: UIImage) -> UIImage? {
-        return cropView.crop(image).croppedImage
+    public func process(_ image: CIImage) -> CIImage? {
+        return cropView.crop(ciContext: CIContext(), image).croppedImage
     }
     
     public func getExpectedCropImageSize() -> CGSize {

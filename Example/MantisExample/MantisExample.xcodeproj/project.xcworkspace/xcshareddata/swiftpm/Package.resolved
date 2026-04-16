@@ -1,0 +1,15 @@
+{
+  "originHash" : "4b6fd88e0d1d4a2b502c8f3967e62484a5f9c8ca5a29967db1e3c06a19547a8a",
+  "pins" : [
+    {
+      "identity" : "photonmetaldisplaycore",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JuniperPhoton/PhotonMetalDisplayCore",
+      "state" : {
+        "revision" : "3c6131086e3efa5b08a5ce7c2082505b4f847d73",
+        "version" : "1.9.0"
+      }
+    }
+  ],
+  "version" : 3
+}

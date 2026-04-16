@@ -70,6 +70,7 @@ final class ImageContainerTests: XCTestCase {
 }
 
 extension ImageContainerTests {
-    private var sourceImage: UIImageView? { imageContainer.findSubview(withAccessibilityIdentifier: "SourceImage") as? UIImageView
+    private var sourceImage: MetalCropImageView? {
+        imageContainer.findSubview(withAccessibilityIdentifier: "SourceImage") as? MetalCropImageView
     }
 }

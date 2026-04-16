@@ -9,10 +9,10 @@ import UIKit
 import Vision
 
 class ImageAutoAdjustHelper {
-    var image: UIImage!
+    var image: CIImage!
     var adjustAngle = Angle(radians: 0)
     
-    init(image: UIImage!) {
+    init(image: CIImage!) {
         self.image = image
     }
     
@@ -20,11 +20,7 @@ class ImageAutoAdjustHelper {
         detectHorizon(in: image)
     }
     
-    func detectHorizon(in image: UIImage) -> Bool {
-        guard let ciImage = CIImage(image: image) else {
-            return false
-        }
-
+    func detectHorizon(in ciImage: CIImage) -> Bool {
         let request = VNDetectHorizonRequest { [weak self] request, _ in
             guard let observations = request.results as? [VNHorizonObservation] else {
                 return

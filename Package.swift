@@ -10,14 +10,18 @@ let package = Package(
     products: [
         .library(
             name: "Mantis",
+            type: .static,
             targets: ["Mantis", "MantisUtils"]
         ),
         .library(name: "MantisUtils", targets: ["MantisUtils"])
     ],
+    dependencies: [
+        .package(url: "https://github.com/JuniperPhoton/PhotonMetalDisplayCore", from: "1.9.0")
+    ],
     targets: [
         .target(
             name: "Mantis",
-            dependencies: ["MantisUtils"],
+            dependencies: ["MantisUtils", "PhotonMetalDisplayCore"],
             exclude: ["Info.plist", "Resources/Info.plist"],
             resources: [.process("Resources")],
             swiftSettings: [.define("MANTIS_SPM")]

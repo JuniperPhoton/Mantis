@@ -32,7 +32,11 @@ protocol CropViewDelegate: AnyObject {
 }
 
 final class CropView: UIView {
-    var image: UIImage
+    var image: CIImage {
+        didSet {
+            imageContainer.updateImage(image)
+        }
+    }
     
     let viewModel: CropViewModelProtocol
     
@@ -91,7 +95,7 @@ final class CropView: UIView {
     }
     
     init(
-        image: UIImage,
+        image: CIImage,
         cropViewConfig: CropViewConfig,
         viewModel: CropViewModelProtocol,
         cropAuxiliaryIndicatorView: CropAuxiliaryIndicatorViewProtocol,
@@ -435,7 +439,7 @@ extension CropView {
     }
     
     private func getInitialCropBoxRect() -> CGRect {
-        guard image.size.width > 0 && image.size.height > 0 else {
+        guard image.extent.size.width > 0 && image.extent.size.height > 0 else {
             return .zero
         }
         
@@ -443,9 +447,9 @@ extension CropView {
         let insideRect: CGRect
         
         if viewModel.isUpOrUpsideDown() {
-            insideRect = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
+            insideRect = CGRect(x: 0, y: 0, width: image.extent.size.width, height: image.extent.size.height)
         } else {
-            insideRect = CGRect(x: 0, y: 0, width: image.size.height, height: image.size.width)
+            insideRect = CGRect(x: 0, y: 0, width: image.extent.size.height, height: image.extent.size.width)
         }
         
         return GeometryHelper.getInscribeRect(fromOutsideRect: outsideRect, andInsideRect: insideRect)
@@ -641,16 +645,15 @@ extension CropView {
 
 // MARK: - internal API
 extension CropView {
-    func asyncCrop(_ image: UIImage, completion: @escaping (CropOutput) -> Void) {
+    func asyncCrop(ciContext: CIContext, _ image: CIImage, completion: @escaping (CropOutput) -> Void) {
         let cropInfo = getCropInfo()
-        let cropOutput = (image.crop(by: cropInfo), makeTransformation(), cropInfo)
+        let cropOutput = (image.crop(ciContext: ciContext, by: cropInfo), makeTransformation(), cropInfo)
         
         DispatchQueue.global(qos: .userInteractive).async {
-            let maskedCropOutput = self.addImageMask(to: cropOutput)
             DispatchQueue.main.async {
                 self.activityIndicator.stopAnimating()
                 self.activityIndicator.isHidden = true
-                completion(maskedCropOutput)
+                completion(cropOutput)
             }
         }
     }
@@ -667,78 +670,6 @@ extension CropView {
             horizontallyFlipped: viewModel.horizontallyFlip,
             verticallyFlipped: viewModel.verticallyFlip
         )
-    }
-    
-    func addImageMask(to cropOutput: CropOutput) -> CropOutput {
-        let (croppedImage, transformation, cropInfo) = cropOutput
-        
-        guard let croppedImage = croppedImage else {
-            assertionFailure("croppedImage should not be nil")
-            return cropOutput
-        }
-        
-        switch cropViewConfig.cropShapeType {
-        case .rect,
-                .square,
-                .circle(maskOnly: true),
-                .roundedRect(_, maskOnly: true),
-                .path(_, maskOnly: true),
-                .diamond(maskOnly: true),
-                .heart(maskOnly: true),
-                .polygon(_, _, maskOnly: true):
-            
-            let outputImage: UIImage?
-            if cropViewConfig.cropBorderWidth > 0 {
-                outputImage = croppedImage.rectangleMasked(borderWidth: cropViewConfig.cropBorderWidth,
-                                                           borderColor: cropViewConfig.cropBorderColor)
-            } else {
-                outputImage = croppedImage
-            }
-            
-            return (outputImage, transformation, cropInfo)
-        case .ellipse:
-            return (croppedImage.ellipseMasked(borderWidth: cropViewConfig.cropBorderWidth,
-                                               borderColor: cropViewConfig.cropBorderColor),
-                    transformation,
-                    cropInfo)
-        case .circle:
-            return (croppedImage.ellipseMasked(borderWidth: cropViewConfig.cropBorderWidth,
-                                               borderColor: cropViewConfig.cropBorderColor),
-                    transformation,
-                    cropInfo)
-        case .roundedRect(let radiusToShortSide, maskOnly: false):
-            let radius = min(croppedImage.size.width, croppedImage.size.height) * radiusToShortSide
-            return (croppedImage.roundRect(radius,
-                                           borderWidth: cropViewConfig.cropBorderWidth,
-                                           borderColor: cropViewConfig.cropBorderColor),
-                    transformation,
-                    cropInfo)
-        case .path(let points, maskOnly: false):
-            return (croppedImage.clipPath(points,
-                                          borderWidth: cropViewConfig.cropBorderWidth,
-                                          borderColor: cropViewConfig.cropBorderColor),
-                    transformation,
-                    cropInfo)
-        case .diamond(maskOnly: false):
-            let points = [CGPoint(x: 0.5, y: 0), CGPoint(x: 1, y: 0.5), CGPoint(x: 0.5, y: 1), CGPoint(x: 0, y: 0.5)]
-            return (croppedImage.clipPath(points,
-                                          borderWidth: cropViewConfig.cropBorderWidth,
-                                          borderColor: cropViewConfig.cropBorderColor),
-                    transformation,
-                    cropInfo)
-        case .heart(maskOnly: false):
-            return (croppedImage.heart(borderWidth: cropViewConfig.cropBorderWidth,
-                                       borderColor: cropViewConfig.cropBorderColor),
-                    transformation,
-                    cropInfo)
-        case .polygon(let sides, let offset, maskOnly: false):
-            let points = polygonPointArray(sides: sides, originX: 0.5, originY: 0.5, radius: 0.5, offset: 90 + offset)
-            return (croppedImage.clipPath(points,
-                                          borderWidth: cropViewConfig.cropBorderWidth,
-                                          borderColor: cropViewConfig.cropBorderColor),
-                    transformation,
-                    cropInfo)
-        }
     }
     
     func getTotalRadians() -> CGFloat {
@@ -1105,27 +1036,28 @@ extension CropView: CropViewProtocol {
         delegate?.cropViewDidEndResize(self)
     }
     
-    func crop() -> CropOutput {
-        return crop(image)
+    func crop(ciContext: CIContext) -> CropOutput {
+        return crop(ciContext: ciContext, image)
     }
     
-    func crop(_ image: UIImage) -> CropOutput {
+    func crop(ciContext: CIContext, _ image: CIImage) -> CropOutput {
         let cropInfo = getCropInfo()
-        let cropOutput = (image.crop(by: cropInfo), makeTransformation(), cropInfo)
-        return addImageMask(to: cropOutput)
+        let cropOutput = (image.crop(ciContext: ciContext, by: cropInfo), makeTransformation(), cropInfo)
+        return cropOutput
     }
     
     /// completion is called in the main thread
-    func asyncCrop(completion: @escaping (CropOutput) -> Void ) {
+    func asyncCrop(ciContext: CIContext, completion: @escaping (CropOutput) -> Void ) {
         activityIndicator.isHidden = false
         activityIndicator.startAnimating()
         
-        asyncCrop(image) { [weak self] cropOutput  in
+        asyncCrop(ciContext: ciContext, image) { [weak self] cropOutput  in
             self?.activityIndicator.isHidden = true
             completion(cropOutput)
         }
     }
     
+    @MainActor
     func getCropInfo() -> CropInfo {
         let rect = imageContainer.convert(imageContainer.bounds,
                                           to: self)
