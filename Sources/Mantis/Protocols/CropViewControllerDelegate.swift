@@ -6,30 +6,31 @@
 //
 
 import UIKit
+import CoreImage
 
 public protocol CropViewControllerDelegate: AnyObject {
     func cropViewControllerDidCrop(_ cropViewController: CropViewController,
-                                   cropped: UIImage,
+                                   cropped: CIImage,
                                    transformation: Transformation,
                                    cropInfo: CropInfo)
-    func cropViewControllerDidFailToCrop(_ cropViewController: CropViewController, original: UIImage)
-    func cropViewControllerDidCancel(_ cropViewController: CropViewController, original: UIImage)
-    
+    func cropViewControllerDidFailToCrop(_ cropViewController: CropViewController, original: CIImage)
+    func cropViewControllerDidCancel(_ cropViewController: CropViewController, original: CIImage)
+
     func cropViewControllerDidBeginResize(_ cropViewController: CropViewController)
-    func cropViewControllerDidEndResize(_ cropViewController: CropViewController, original: UIImage, cropInfo: CropInfo)
-    
+    func cropViewControllerDidEndResize(_ cropViewController: CropViewController, original: CIImage, cropInfo: CropInfo)
+
     @available(*, deprecated, message: "Use cropViewControllerDidImageTransformed(_ cropViewController: CropViewController, transformation: Transformation) instead")
     func cropViewControllerDidImageTransformed(_ cropViewController: CropViewController)
-    
+
     func cropViewControllerDidImageTransformed(_ cropViewController: CropViewController, transformation: Transformation)
-    
+
     func cropViewController(_ cropViewController: CropViewController, didBecomeResettable resettable: Bool)
 }
 
 public extension CropViewControllerDelegate {
-    func cropViewControllerDidFailToCrop(_ cropViewController: CropViewController, original: UIImage) {}
+    func cropViewControllerDidFailToCrop(_ cropViewController: CropViewController, original: CIImage) {}
     func cropViewControllerDidBeginResize(_ cropViewController: CropViewController) {}
-    func cropViewControllerDidEndResize(_ cropViewController: CropViewController, original: UIImage, cropInfo: CropInfo) {}
+    func cropViewControllerDidEndResize(_ cropViewController: CropViewController, original: CIImage, cropInfo: CropInfo) {}
     func cropViewControllerDidImageTransformed(_ cropViewController: CropViewController) {}
     func cropViewControllerDidImageTransformed(_ cropViewController: CropViewController, transformation: Transformation) {}
     func cropViewController(_ cropViewController: CropViewController, didBecomeResettable resettable: Bool) {}
