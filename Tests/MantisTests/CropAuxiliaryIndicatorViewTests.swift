@@ -5,8 +5,8 @@
 //  Created by Yingtao Guo on 2/26/23.
 //
 
-import XCTest
 @testable import Mantis
+import XCTest
 
 final class CropAuxiliaryIndicatorViewTests: XCTestCase {
     

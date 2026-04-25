@@ -6,8 +6,8 @@
 //  Copyright © 2018 Echo. All rights reserved.
 //
 
-import UIKit
 import CoreImage
+import UIKit
 
 final class ImageContainer: UIView {
     private let renderer: CIImageRenderer

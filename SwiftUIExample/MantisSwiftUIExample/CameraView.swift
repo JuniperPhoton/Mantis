@@ -5,8 +5,8 @@
 //  Created by Yingtao Guo on 2/20/23.
 //
 
-import SwiftUI
 import PhotosUI
+import SwiftUI
 
 struct CameraView: UIViewControllerRepresentable {
     @Binding var image: UIImage?

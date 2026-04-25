@@ -5,8 +5,8 @@
 //  Created by Yingtao Guo on 6/20/23.
 //
 
-import XCTest
 @testable import Mantis
+import XCTest
 
 final class SlideDialTests: XCTestCase {
     

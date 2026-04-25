@@ -5,8 +5,8 @@
 //  Created by yingtguo on 2/3/23.
 //
 
-import XCTest
 @testable import Mantis
+import XCTest
 
 final class RotateDialTests: XCTestCase {
     

@@ -6,8 +6,8 @@
 //  Copyright © 2020 Echo. All rights reserved.
 //
 
-import UIKit
 import Mantis
+import UIKit
 
 class CustomizedCropToolbar: UIView, CropToolbarProtocol {
     var iconProvider: CropToolbarIconProvider?

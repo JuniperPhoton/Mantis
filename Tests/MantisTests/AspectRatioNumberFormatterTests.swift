@@ -4,8 +4,8 @@
 //
 //  Created by Photon Juniper on 2024/3/9.
 //
-import XCTest
 @testable import MantisUtils
+import XCTest
 
 final class AspectRatioNumberFormatterTests: XCTestCase {
     func testFormatting() throws {

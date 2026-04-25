@@ -3,9 +3,9 @@
 //  Mantis
 //
 
-import UIKit
-import MetalKit
 import CoreImage
+import MetalKit
+import UIKit
 
 final class CIImageRenderer: NSObject {
 

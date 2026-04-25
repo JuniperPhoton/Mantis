@@ -5,8 +5,8 @@
 //  Created by Yingtao Guo on 2/3/23.
 //
 
-import UIKit
 @testable import Mantis
+import UIKit
 
 class FakeCropMaskViewManager: CropMaskViewManagerProtocol {
     func setup(in view: UIView, cropRatio: CGFloat) {

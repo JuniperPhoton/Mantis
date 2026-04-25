@@ -5,8 +5,8 @@
 //  Created by Yingtao Guo on 2/2/23.
 //
 
-import UIKit
 @testable import Mantis
+import UIKit
 
 class FakeCropView: UIView, CropViewProtocol {
     var image: CIImage = CIImage()

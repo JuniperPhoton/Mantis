@@ -6,8 +6,8 @@
 //  Copyright © 2018 Echo. All rights reserved.
 //
 
-import XCTest
 @testable import Mantis
+import XCTest
 
 class MantisTests: XCTestCase {
 

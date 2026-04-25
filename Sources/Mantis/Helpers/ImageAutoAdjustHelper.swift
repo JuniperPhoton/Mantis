@@ -5,8 +5,8 @@
 //  Created by Yingtao Guo on 6/24/23.
 //
 
-import UIKit
 import CoreImage
+import UIKit
 import Vision
 
 class ImageAutoAdjustHelper {

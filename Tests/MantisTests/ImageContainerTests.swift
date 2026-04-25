@@ -5,8 +5,8 @@
 //  Created by yingtguo on 2/4/23.
 //
 
-import XCTest
 @testable import Mantis
+import XCTest
 
 final class ImageContainerTests: XCTestCase {
 

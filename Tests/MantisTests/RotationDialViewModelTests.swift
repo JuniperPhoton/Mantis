@@ -5,8 +5,8 @@
 //  Created by yingtguo on 1/19/23.
 //
 
-import XCTest
 @testable import Mantis
+import XCTest
 
 final class RotationDialViewModelTests: XCTestCase {
     var rotationDialViewModel = RotationDialViewModel()

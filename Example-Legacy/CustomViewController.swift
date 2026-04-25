@@ -6,8 +6,8 @@
 //  Copyright © 2018 Echo Studio. All rights reserved.
 //
 
-import UIKit
 import Mantis
+import UIKit
 
 class CustomViewController: CropViewController {
     override func viewDidLoad() {

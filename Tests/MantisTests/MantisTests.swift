@@ -1,5 +1,5 @@
-import XCTest
 @testable import Mantis
+import XCTest
 
 final class MantisTests: XCTestCase {
     func testExample() {

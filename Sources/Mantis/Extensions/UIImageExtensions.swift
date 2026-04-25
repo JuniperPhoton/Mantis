@@ -5,8 +5,8 @@
 //  Created by Yingtao Guo on 10/30/18.
 //
 
-import UIKit
 import CoreImage
+import UIKit
 
 public extension CGImagePropertyOrientation {
     init(_ uiOrientation: UIImage.Orientation) {

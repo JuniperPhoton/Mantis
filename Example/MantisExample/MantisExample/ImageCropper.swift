@@ -5,9 +5,9 @@
 //  Created by Yingtao Guo on 2/16/23.
 //
 
+import CoreImage
 import Mantis
 import SwiftUI
-import CoreImage
 
 enum ImageCropperType {
     case normal
