@@ -15,6 +15,9 @@ final class CropWorkbenchView: UIScrollView {
     var touchesCancelled = {}
     var touchesEnded = {}
     
+    var minimumZoomScaleAdjuster: ((CGFloat) -> CGFloat)?
+    var contentOffsetAdjuster: (() -> Void)?
+    
     private var initialMinimumZoomScale: CGFloat = 1.0
     
     deinit {
@@ -80,7 +83,8 @@ final class CropWorkbenchView: UIScrollView {
         let scaleW = bounds.width / imageContainer.bounds.width
         let scaleH = bounds.height / imageContainer.bounds.height
         
-        return max(scaleW, scaleH) * initialMinimumZoomScale
+        let scale = max(scaleW, scaleH) * initialMinimumZoomScale
+        return minimumZoomScaleAdjuster?(scale) ?? scale
     }
 }
 
@@ -90,6 +94,7 @@ extension CropWorkbenchView: CropWorkbenchViewProtocol {
         contentOffset.y = max(contentOffset.y, 0)        
         contentOffset.x = min(contentOffset.x, contentSize.width - bounds.size.width)
         contentOffset.y = min(contentOffset.y, contentSize.height - bounds.size.height)
+        contentOffsetAdjuster?()
     }
     
     func updateMinZoomScale() {

@@ -106,6 +106,10 @@ struct ContentView: View {
                 cropperType = .noRotaionDial
                 showingCropper = true
             }.font(.title)
+            Button("Perspective Correction") {
+                cropperType = .perspective
+                showingCropper = true
+            }.font(.title)
             Button("Hide Attached Toolbar") {
                 cropperType = .noAttachedToolbar
                 showingCropper = true

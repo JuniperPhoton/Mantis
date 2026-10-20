@@ -17,6 +17,10 @@ class FakeCropWorkbenchView: UIScrollView, CropWorkbenchViewProtocol {
     
     var touchesEnded: () -> Void = {}
     
+    var minimumZoomScaleAdjuster: ((CGFloat) -> CGFloat)?
+    
+    var contentOffsetAdjuster: (() -> Void)?
+    
     func checkContentOffset() {
         
     }

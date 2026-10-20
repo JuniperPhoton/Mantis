@@ -63,6 +63,30 @@ final class CropView: UIView {
     var checkForForceFixedRatioFlag = false
     let cropViewConfig: CropViewConfig
     
+    /// When enabled, room is reserved for the perspective slider which takes the place
+    /// of the attached rotation control view while a perspective direction is active.
+    var perspectiveControlEnabled = false
+    
+    // Referred to in extension
+    private(set) var activePerspectiveDirection: PerspectiveDirection?
+    
+    lazy var perspectiveControlView: SlideDial = {
+        var config = SlideDialConfig()
+        config.limitation = perspectiveSliderLimitation
+        let slideDial = SlideDial(frame: .zero,
+                                  config: config,
+                                  viewModel: SlideDialViewModel(),
+                                  slideRuler: SlideRuler(frame: .zero, config: config))
+        slideDial.accessibilityLabel = LocalizedHelper.getString("Mantis.Adjust image perspective", value: "Adjust image perspective")
+        slideDial.isHidden = true
+        addSubview(slideDial)
+        return slideDial
+    }()
+    
+    private let perspectiveSliderLimitation: CGFloat = 100
+    private let perspectiveConstraintTolerance: CGFloat = 1e-3
+    private var isConstrainingContentOffset = false
+    
     private var flipOddTimes = false
     
     lazy private var activityIndicator: ActivityIndicatorProtocol = {
@@ -179,13 +203,23 @@ final class CropView: UIView {
     }
     
     private func toggleRotationControlViewIsNeeded(isHidden: Bool) {
+        let isAdjustingPerspective = activePerspectiveDirection != nil
+        
         if rotationControlView?.isAttachedToCropView == true {
-            rotationControlView?.isHidden = isHidden
+            rotationControlView?.isHidden = isHidden || isAdjustingPerspective
+        }
+        
+        if perspectiveControlEnabled {
+            perspectiveControlView.isHidden = isHidden || !isAdjustingPerspective
         }
     }
     
     private func imageStatusChanged() -> Bool {
         if viewModel.getTotalRadians() != 0 {
+            return true
+        }
+        
+        if !viewModel.perspective.isZero {
             return true
         }
         
@@ -223,6 +257,7 @@ final class CropView: UIView {
         cropAuxiliaryIndicatorView.bringSelfToFront()
         
         setupRotationDialIfNeeded()
+        setupPerspectiveControlIfNeeded()
         
         if aspectRatioLockEnabled {
             setFixedRatioCropBox()
@@ -236,6 +271,14 @@ final class CropView: UIView {
         
         cropWorkbenchView.touchesEnded = { [weak self] in
             self?.viewModel.setBetweenOperationStatus()
+        }
+        
+        cropWorkbenchView.minimumZoomScaleAdjuster = { [weak self] scale in
+            self?.getMinimumZoomScaleForPerspective(from: scale) ?? scale
+        }
+        
+        cropWorkbenchView.contentOffsetAdjuster = { [weak self] in
+            self?.constrainContentOffsetToPerspective()
         }
         
         cropWorkbenchView.delegate = self
@@ -304,10 +347,52 @@ final class CropView: UIView {
         rotationControlView.bringSelfToFront()
     }
     
-    private func adaptRotationControlViewToCropBoxIfNeeded() {
-        guard let rotationControlView = rotationControlView,
-              rotationControlView.isAttachedToCropView else { return }
+    private func setupPerspectiveControlIfNeeded() {
+        guard perspectiveControlEnabled else {
+            return
+        }
         
+        let perspectiveControlView = perspectiveControlView
+        
+        // Resetting the slider reports a zero value, which should not touch the image
+        perspectiveControlView.didUpdateRotationValue = { _ in }
+        perspectiveControlView.reset()
+        
+        perspectiveControlView.didUpdateRotationValue = { [unowned self] value in
+            self.handlePerspectiveControlValueChanged(value)
+        }
+        
+        perspectiveControlView.didFinishRotation = { [unowned self] in
+            if !self.viewModel.needCrop() {
+                self.delegate?.cropViewDidEndResize(self)
+            }
+            self.viewModel.setBetweenOperationStatus()
+        }
+        
+        let boardLength = min(bounds.width, bounds.height) * perspectiveControlView.getLengthRatio()
+        let sliderFrame = CGRect(x: 0,
+                                 y: 0,
+                                 width: boardLength,
+                                 height: cropViewConfig.rotationControlViewHeight)
+        perspectiveControlView.setupUI(withAllowableFrame: sliderFrame)
+        
+        updatePerspectiveControlValue()
+        toggleRotationControlViewIsNeeded(isHidden: false)
+        adaptRotationControlViewToCropBoxIfNeeded()
+        perspectiveControlView.bringSelfToFront()
+    }
+    
+    private func adaptRotationControlViewToCropBoxIfNeeded() {
+        if let rotationControlView = rotationControlView, rotationControlView.isAttachedToCropView {
+            adaptControlViewToCropBox(rotationControlView)
+        }
+        
+        if perspectiveControlEnabled {
+            adaptControlViewToCropBox(perspectiveControlView)
+        }
+    }
+    
+    private func adaptControlViewToCropBox(_ rotationControlView: RotationControlViewProtocol) {
         if Orientation.treatAsPortrait {
             rotationControlView.transform = CGAffineTransform(rotationAngle: 0)
             rotationControlView.frame.origin.x = cropAuxiliaryIndicatorView.frame.origin.x +
@@ -460,7 +545,8 @@ extension CropView {
         
         var rotationControlViewHeight: CGFloat = 0
         
-        if cropViewConfig.showAttachedRotationControlView && rotationControlView?.isAttachedToCropView == true {
+        if (cropViewConfig.showAttachedRotationControlView && rotationControlView?.isAttachedToCropView == true)
+            || perspectiveControlEnabled {
             rotationControlViewHeight = cropViewConfig.rotationControlViewHeight
         }
         
@@ -592,6 +678,11 @@ extension CropView {
     }
     
     func makeSureImageContainsCropOverlay() {
+        if !viewModel.perspective.isZero {
+            makeSureCropBoxInsidePerspectiveImage(zoomToMinimum: false)
+            return
+        }
+        
         if !imageContainer.contains(rect: cropAuxiliaryIndicatorView.frame, fromView: self, tolerance: 0.25) {
             cropWorkbenchView.zoomScaleToBound(animated: true)
         }
@@ -666,7 +757,8 @@ extension CropView {
             maskFrame: cropAuxiliaryIndicatorView.frame,
             cropWorkbenchViewBounds: cropWorkbenchView.bounds,
             horizontallyFlipped: viewModel.horizontallyFlip,
-            verticallyFlipped: viewModel.verticallyFlip
+            verticallyFlipped: viewModel.verticallyFlip,
+            perspective: viewModel.perspective
         )
     }
     
@@ -799,6 +891,7 @@ extension CropView {
             
             viewModel.degrees *= -1
             rotationControlView?.updateRotationValue(by: Angle(degrees: viewModel.degrees))
+            updatePerspectiveControlValue()
         }
         
         if animated {
@@ -929,6 +1022,7 @@ extension CropView: CropViewProtocol {
         func handleRotateCompletion() {
             cropWorkbenchView.updateMinZoomScale()
             viewModel.rotateBy90(withRotateType: newRotateType)
+            updatePerspectiveControlValue()
             viewModel.setBetweenOperationStatus()
             completion()
         }
@@ -1053,7 +1147,8 @@ extension CropView: CropViewProtocol {
                                             maskFrame: maskFrame,
                                             cropWorkbenchViewBounds: .zero,
                                             horizontallyFlipped: viewModel.horizontallyFlip,
-                                            verticallyFlipped: viewModel.verticallyFlip)
+                                            verticallyFlipped: viewModel.verticallyFlip,
+                                            perspective: viewModel.perspective)
         return transformation
     }
     
@@ -1070,6 +1165,9 @@ extension CropView: CropViewProtocol {
             if transformInfo.verticallyFlipped {
                 flipOddTimes.toggle()
             }
+            
+            viewModel.perspective = transformInfo.perspective
+            updateImageContainerForPerspective()
             
             var newTransform = getTransformInfo(byTransformInfo: transformInfo)
             
@@ -1108,6 +1206,7 @@ extension CropView: CropViewProtocol {
         flipOddTimes = false
         aspectRatioLockEnabled = forceFixedRatio
         viewModel.reset(forceFixedRatio: forceFixedRatio)
+        updateImageContainerForPerspective()
         
         resetComponents()
         
@@ -1138,7 +1237,7 @@ extension CropView: CropViewProtocol {
 
     func updateImage(_ image: CIImage) {
         self.image = image
-        imageContainer.updateImage(image)
+        imageContainer.updateImage(viewModel.perspective.apply(to: image))
     }
     
     func getCropInfo() -> CropInfo {
@@ -1179,7 +1278,8 @@ extension CropView: CropViewProtocol {
             scaleY: scaleY,
             cropSize: cropAuxiliaryIndicatorView.frame.size,
             imageViewSize: imageContainer.bounds.size,
-            cropRegion: cropRegion
+            cropRegion: cropRegion,
+            perspective: viewModel.perspective
         )
     }
     
@@ -1190,6 +1290,233 @@ extension CropView: CropViewProtocol {
     func rotate(by angle: Angle) {
         viewModel.setRotatingStatus(by: angle)
         rotationControlView?.updateRotationValue(by: angle)
+    }
+    
+    func setActivePerspectiveDirection(_ direction: PerspectiveDirection?) {
+        guard perspectiveControlEnabled else {
+            return
+        }
+        
+        activePerspectiveDirection = direction
+        updatePerspectiveControlValue()
+        toggleRotationControlViewIsNeeded(isHidden: false)
+    }
+}
+
+// MARK: - Perspective
+extension CropView {
+    private func handlePerspectiveControlValueChanged(_ value: Angle) {
+        guard let direction = activePerspectiveDirection else {
+            return
+        }
+        
+        var screenPerspective = getScreenPerspective()
+        let newValue = value.degrees / perspectiveSliderLimitation
+        
+        guard screenPerspective[direction] != newValue else {
+            return
+        }
+        
+        screenPerspective[direction] = newValue
+        viewModel.setTouchRotationBoardStatus()
+        setPerspective(getImagePerspective(byScreenPerspective: screenPerspective))
+    }
+    
+    private func updatePerspectiveControlValue() {
+        guard perspectiveControlEnabled, let direction = activePerspectiveDirection else {
+            return
+        }
+        
+        // The slider only accepts values that are strictly within its limitation
+        let limitation = perspectiveSliderLimitation - 1e-6
+        let value = min(limitation, max(-limitation, getScreenPerspective()[direction] * perspectiveSliderLimitation))
+        perspectiveControlView.updateRotationValue(by: Angle(degrees: value))
+    }
+    
+    private func setPerspective(_ perspective: Perspective) {
+        viewModel.perspective = perspective
+        updateImageContainerForPerspective()
+        adjustWorkbenchViewForPerspective()
+    }
+    
+    func updateImageContainerForPerspective() {
+        imageContainer.updateImage(viewModel.perspective.apply(to: image))
+        imageContainer.validQuad = viewModel.perspective.normalizedValidQuad(for: image.extent.size)
+    }
+    
+    private func adjustWorkbenchViewForPerspective() {
+        makeSureCropBoxInsidePerspectiveImage(zoomToMinimum: !isManuallyZoomed)
+    }
+    
+    /// Zooms in if needed and moves the image the least, so that the crop box stays inside the warped image.
+    private func makeSureCropBoxInsidePerspectiveImage(zoomToMinimum: Bool) {
+        let zoomScale = cropWorkbenchView.zoomScale
+        guard zoomScale > 0 else {
+            return
+        }
+        
+        let bounds = cropWorkbenchView.bounds
+        let contentOffset = cropWorkbenchView.contentOffset
+        let center = CGPoint(x: (contentOffset.x + bounds.width / 2) / zoomScale,
+                             y: (contentOffset.y + bounds.height / 2) / zoomScale)
+        
+        cropWorkbenchView.updateMinZoomScale()
+        let minimumZoomScale = cropWorkbenchView.minimumZoomScale
+        let newZoomScale = zoomToMinimum ? minimumZoomScale : max(zoomScale, minimumZoomScale)
+        
+        if newZoomScale != zoomScale {
+            // Keep the content at the center of the crop box still while zooming
+            cropWorkbenchView.zoomScale = newZoomScale
+            cropWorkbenchView.contentOffset = CGPoint(x: center.x * newZoomScale - bounds.width / 2,
+                                                      y: center.y * newZoomScale - bounds.height / 2)
+        }
+        
+        cropWorkbenchView.updateContentOffset()
+    }
+    
+    /// The constraints on translating the image (in image container coordinates) so that the crop box
+    /// stays inside the warped image, and the workbench bounds stay inside the image container like before.
+    /// They are calculated as if the workbench were zoomed to `zoomScale` around the center of the crop box.
+    private func getPerspectiveTranslationConstraints(atZoomScale zoomScale: CGFloat) -> [HalfPlane] {
+        let currentZoomScale = cropWorkbenchView.zoomScale
+        let containerSize = imageContainer.bounds.size
+        let contentOffset = cropWorkbenchView.contentOffset
+        let workbenchSize = cropWorkbenchView.bounds.size
+        
+        let visibleRect = CGRect(x: contentOffset.x / currentZoomScale,
+                                 y: contentOffset.y / currentZoomScale,
+                                 width: workbenchSize.width / currentZoomScale,
+                                 height: workbenchSize.height / currentZoomScale)
+        let center = CGPoint(x: visibleRect.midX, y: visibleRect.midY)
+        let ratio = currentZoomScale / zoomScale
+        
+        let cropBoxFrame = cropAuxiliaryIndicatorView.frame
+        let cropBoxCorners = [
+            CGPoint(x: cropBoxFrame.minX, y: cropBoxFrame.minY),
+            CGPoint(x: cropBoxFrame.maxX, y: cropBoxFrame.minY),
+            CGPoint(x: cropBoxFrame.maxX, y: cropBoxFrame.maxY),
+            CGPoint(x: cropBoxFrame.minX, y: cropBoxFrame.maxY)
+        ].map { point -> CGPoint in
+            let converted = convert(point, to: imageContainer)
+            return CGPoint(x: center.x + (converted.x - center.x) * ratio,
+                           y: center.y + (converted.y - center.y) * ratio)
+        }
+        
+        let scaledVisibleRect = CGRect(x: center.x - visibleRect.width * ratio / 2,
+                                       y: center.y - visibleRect.height * ratio / 2,
+                                       width: visibleRect.width * ratio,
+                                       height: visibleRect.height * ratio)
+        
+        let quad = imageContainer.validQuad.map {
+            CGPoint(x: $0.x * containerSize.width, y: $0.y * containerSize.height)
+        }
+        
+        return Perspective.translationConstraints(keeping: cropBoxCorners, inConvexQuad: quad) + [
+            HalfPlane(normal: CGPoint(x: -1, y: 0), limit: scaledVisibleRect.minX),
+            HalfPlane(normal: CGPoint(x: 1, y: 0), limit: containerSize.width - scaledVisibleRect.maxX),
+            HalfPlane(normal: CGPoint(x: 0, y: -1), limit: scaledVisibleRect.minY),
+            HalfPlane(normal: CGPoint(x: 0, y: 1), limit: containerSize.height - scaledVisibleRect.maxY)
+        ]
+    }
+    
+    private func canPlaceCropBoxInsidePerspectiveImage(atZoomScale zoomScale: CGFloat) -> Bool {
+        let constraints = getPerspectiveTranslationConstraints(atZoomScale: zoomScale)
+        return Perspective.closestFeasiblePoint(to: constraints, tolerance: perspectiveConstraintTolerance) != nil
+    }
+    
+    /// The smallest zoom scale at which the crop box fits in the warped image somewhere.
+    /// Zooming in shrinks the crop box in image coordinates, so the feasibility is monotonic.
+    private func getMinimumZoomScaleForPerspective(from zoomScale: CGFloat) -> CGFloat {
+        guard !viewModel.perspective.isZero,
+              zoomScale > 0,
+              cropWorkbenchView.zoomScale > 0,
+              imageContainer.bounds.width > 0,
+              imageContainer.bounds.height > 0 else {
+            return zoomScale
+        }
+        
+        if canPlaceCropBoxInsidePerspectiveImage(atZoomScale: zoomScale) {
+            return zoomScale
+        }
+        
+        var low = zoomScale
+        var high = zoomScale * 2
+        for _ in 0..<20 where !canPlaceCropBoxInsidePerspectiveImage(atZoomScale: high) {
+            low = high
+            high *= 2
+        }
+        
+        for _ in 0..<30 {
+            let middle = (low + high) / 2
+            if canPlaceCropBoxInsidePerspectiveImage(atZoomScale: middle) {
+                high = middle
+            } else {
+                low = middle
+            }
+        }
+        
+        return high
+    }
+    
+    /// Moves the image the least so that the crop box stays inside the warped image.
+    /// Nothing happens if it is impossible at the current zoom scale, e.g. while the pinch gesture bounces.
+    func constrainContentOffsetToPerspective() {
+        guard !viewModel.perspective.isZero, !isConstrainingContentOffset else {
+            return
+        }
+        
+        let zoomScale = cropWorkbenchView.zoomScale
+        guard zoomScale > 0, imageContainer.bounds.width > 0, imageContainer.bounds.height > 0 else {
+            return
+        }
+        
+        let constraints = getPerspectiveTranslationConstraints(atZoomScale: zoomScale)
+        guard let translation = Perspective.closestFeasiblePoint(to: constraints, tolerance: perspectiveConstraintTolerance),
+              hypot(translation.x, translation.y) > perspectiveConstraintTolerance else {
+            return
+        }
+        
+        isConstrainingContentOffset = true
+        cropWorkbenchView.contentOffset.x += translation.x * zoomScale
+        cropWorkbenchView.contentOffset.y += translation.y * zoomScale
+        isConstrainingContentOffset = false
+    }
+    
+    /// The axes of the image expressed in the crop view, snapped to the closest screen axis.
+    /// The fine rotation is always less than 45 degrees, so snapping is unambiguous.
+    private func getImageAxesOnScreen() -> (xAxis: CGPoint, yAxis: CGPoint) {
+        let transform = cropWorkbenchView.transform
+        
+        func snap(_ dx: CGFloat, _ dy: CGFloat) -> CGPoint {
+            if abs(dx) >= abs(dy) {
+                return CGPoint(x: dx > 0 ? 1 : -1, y: 0)
+            } else {
+                return CGPoint(x: 0, y: dy > 0 ? 1 : -1)
+            }
+        }
+        
+        return (snap(transform.a, transform.b), snap(transform.c, transform.d))
+    }
+    
+    /// The perspective stored in the view model is in image space. Users adjust it in screen space,
+    /// so that "vertical" always means vertical on screen after 90 degree rotations and flips.
+    ///
+    /// A perspective is treated as a tilt vector pointing to the edge that comes closer to the viewer:
+    /// horizontal points to +x (right edge), vertical points to -y (top edge).
+    private func getScreenPerspective() -> Perspective {
+        let axes = getImageAxesOnScreen()
+        let perspective = viewModel.perspective
+        let tiltX = perspective.horizontal * axes.xAxis.x - perspective.vertical * axes.yAxis.x
+        let tiltY = perspective.horizontal * axes.xAxis.y - perspective.vertical * axes.yAxis.y
+        return Perspective(horizontal: tiltX, vertical: -tiltY)
+    }
+    
+    private func getImagePerspective(byScreenPerspective screenPerspective: Perspective) -> Perspective {
+        let axes = getImageAxesOnScreen()
+        let tilt = CGPoint(x: screenPerspective.horizontal, y: -screenPerspective.vertical)
+        let horizontal = tilt.x * axes.xAxis.x + tilt.y * axes.xAxis.y
+        let vertical = -(tilt.x * axes.yAxis.x + tilt.y * axes.yAxis.y)
+        return Perspective(horizontal: horizontal, vertical: vertical)
     }
 }
 

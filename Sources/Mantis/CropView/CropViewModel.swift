@@ -83,6 +83,7 @@ final class CropViewModel: CropViewModelProtocol {
     
     var horizontallyFlip = false
     var verticallyFlip = false
+    var perspective = Perspective.zero
 
     private let cropViewPadding: CGFloat
     private let hotAreaUnit: CGFloat
@@ -90,6 +91,7 @@ final class CropViewModel: CropViewModelProtocol {
     func reset(forceFixedRatio: Bool = false) {
         horizontallyFlip = false
         verticallyFlip = false
+        perspective = .zero
         cropBoxFrame = .zero
         degrees = 0
         rotationType = .none

@@ -23,6 +23,8 @@ public struct ToolbarButtonOptions: OptionSet {
     static public let autoAdjust = ToolbarButtonOptions(rawValue: 1 << 7)
     static public let cancel = ToolbarButtonOptions(rawValue: 1 << 8)
     static public let done = ToolbarButtonOptions(rawValue: 1 << 9)
+    static public let horizontalPerspective = ToolbarButtonOptions(rawValue: 1 << 10)
+    static public let verticalPerspective = ToolbarButtonOptions(rawValue: 1 << 11)
     
     static public let `default`: ToolbarButtonOptions = [
         cancel,
@@ -41,6 +43,8 @@ public struct ToolbarButtonOptions: OptionSet {
         alterCropper90Degree,
         horizontallyFlip,
         verticallyFlip,
+        horizontalPerspective,
+        verticalPerspective,
         done
     ]
 }

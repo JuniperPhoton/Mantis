@@ -23,6 +23,8 @@ public protocol CropToolbarDelegate: AnyObject {
     func didSelectHorizontallyFlip(_ cropToolbar: CropToolbarProtocol?)
     func didSelectVerticallyFlip(_ cropToolbar: CropToolbarProtocol?)
     func didSelectAutoAdjust(_ cropToolbar: CropToolbarProtocol?, isActive: Bool)
+    /// direction is nil when perspective adjustment is turned off and the rotation control is back
+    func didSelectPerspectiveAdjustment(_ cropToolbar: CropToolbarProtocol?, direction: PerspectiveDirection?)
 }
 
 public extension CropToolbarDelegate {
@@ -36,6 +38,7 @@ public extension CropToolbarDelegate {
     func didSelectHorizontallyFlip(_ cropToolbar: CropToolbarProtocol?) {}
     func didSelectVerticallyFlip(_ cropToolbar: CropToolbarProtocol?) {}
     func didSelectAutoAdjust(_ cropToolbar: CropToolbarProtocol?) {}
+    func didSelectPerspectiveAdjustment(_ cropToolbar: CropToolbarProtocol?, direction: PerspectiveDirection?) {}
 }
 
 public protocol CropToolbarIconProvider: AnyObject {
@@ -49,6 +52,8 @@ public protocol CropToolbarIconProvider: AnyObject {
     func getHorizontallyFlipIcon() -> UIImage?
     func getVerticallyFlipIcon() -> UIImage?
     func getAutoAdjustIcon() -> UIImage?
+    func getHorizontalPerspectiveIcon() -> UIImage?
+    func getVerticalPerspectiveIcon() -> UIImage?
 }
 
 public extension CropToolbarIconProvider {
@@ -62,6 +67,8 @@ public extension CropToolbarIconProvider {
     func getHorizontallyFlipIcon() -> UIImage? { return nil }
     func getVerticallyFlipIcon() -> UIImage? { return nil }
     func getAutoAdjustIcon() -> UIImage? { return nil }
+    func getHorizontalPerspectiveIcon() -> UIImage? { return nil }
+    func getVerticalPerspectiveIcon() -> UIImage? { return nil }
 }
 
 public protocol CropToolbarProtocol: UIView {

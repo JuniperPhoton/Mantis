@@ -12,6 +12,11 @@ extension CropView {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         let newPoint = convert(point, to: self)
         
+        if activePerspectiveDirection != nil && perspectiveControlView.frame.contains(newPoint) {
+            let pointInPerspectiveControlView = perspectiveControlView.convert(newPoint, from: self)
+            return perspectiveControlView.getTouchTarget(with: pointInPerspectiveControlView)
+        }
+        
         if let rotationControlView = rotationControlView, rotationControlView.frame.contains(newPoint) {
             let pointInRotationControlView = rotationControlView.convert(newPoint, from: self)
             return rotationControlView.getTouchTarget(with: pointInRotationControlView)

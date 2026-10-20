@@ -13,6 +13,10 @@ extension CropView: UIScrollViewDelegate {
         return imageContainer
     }
     
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        constrainContentOffsetToPerspective()
+    }
+    
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         viewModel.setTouchImageStatus()
     }

@@ -138,6 +138,8 @@ open class CropViewController: UIViewController {
         view.backgroundColor = .black
         
         cropView.initialSetup(delegate: self, presetFixedRatioType: config.presetFixedRatioType)
+        cropView.perspectiveControlEnabled = !config.cropToolbarConfig.toolbarButtonOptions
+            .isDisjoint(with: [.horizontalPerspective, .verticalPerspective])
         createCropToolbar()
         if config.cropToolbarConfig.ratioCandidatesShowType == .alwaysShowRatioList
             && config.cropToolbarConfig.includeFixedRatiosSettingButton {
@@ -461,6 +463,10 @@ extension CropViewController: CropToolbarDelegate {
     
     public func didSelectAutoAdjust(_ cropToolbar: CropToolbarProtocol?, isActive: Bool) {
         handleAutoAdjust(isActive: isActive)
+    }
+    
+    public func didSelectPerspectiveAdjustment(_ cropToolbar: CropToolbarProtocol?, direction: PerspectiveDirection?) {
+        cropView.setActivePerspectiveDirection(direction)
     }
 }
 

@@ -13,6 +13,7 @@ enum ImageCropperType {
     case normal
     case noRotaionDial
     case noAttachedToolbar
+    case perspective
 }
 
 struct ImageCropper: UIViewControllerRepresentable {
@@ -61,6 +62,8 @@ struct ImageCropper: UIViewControllerRepresentable {
             return makeImageCropperHiddingRotationDial(context: context)
         case .noAttachedToolbar:
             return makeImageCropperWithoutAttachedToolbar(context: context)
+        case .perspective:
+            return makeImageCropperWithPerspective(context: context)
         }
     }
 
@@ -87,6 +90,22 @@ extension ImageCropper {
     func makeImageCropperHiddingRotationDial(context: Context) -> UIViewController {
         var config = Mantis.Config()
         config.cropViewConfig.showAttachedRotationControlView = false
+        let cropViewController = Mantis.cropViewController(image: ciImage(from: image), config: config)
+        cropViewController.delegate = context.coordinator
+        return cropViewController
+    }
+
+    func makeImageCropperWithPerspective(context: Context) -> UIViewController {
+        var config = Mantis.Config()
+        config.cropToolbarConfig.toolbarButtonOptions = [
+            .cancel,
+            .counterclockwiseRotate,
+            .verticalPerspective,
+            .horizontalPerspective,
+            .reset,
+            .ratio,
+            .done
+        ]
         let cropViewController = Mantis.cropViewController(image: ciImage(from: image), config: config)
         cropViewController.delegate = context.coordinator
         return cropViewController

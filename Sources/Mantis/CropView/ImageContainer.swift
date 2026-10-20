@@ -11,6 +11,8 @@ import UIKit
 
 final class ImageContainer: UIView {
     private let renderer: CIImageRenderer
+    
+    var validQuad = Perspective.unitQuad
 
     init(image: CIImage) {
         guard let r = CIImageRenderer.create() else {
@@ -43,6 +45,17 @@ extension ImageContainer: ImageContainerProtocol {
     }
 
     func contains(rect: CGRect, fromView view: UIView, tolerance: CGFloat = 0.5) -> Bool {
+        if validQuad != Perspective.unitQuad {
+            let quad = validQuad.map { CGPoint(x: $0.x * bounds.width, y: $0.y * bounds.height) }
+            let corners = [CGPoint(x: rect.minX, y: rect.minY),
+                           CGPoint(x: rect.maxX, y: rect.minY),
+                           CGPoint(x: rect.maxX, y: rect.maxY),
+                           CGPoint(x: rect.minX, y: rect.maxY)]
+            return corners.allSatisfy {
+                Perspective.isPoint(view.convert($0, to: self), inConvexQuad: quad, tolerance: tolerance)
+            }
+        }
+        
         let newRect = view.convert(rect, to: self)
 
         let point1 = newRect.origin

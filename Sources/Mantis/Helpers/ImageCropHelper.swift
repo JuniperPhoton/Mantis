@@ -18,6 +18,10 @@ public class ImageCropHelper {
     }
     
     public func crop(cgImage: CGImage, cropInfo: CropInfo) -> CGImage? {
+        guard let cgImage = cropInfo.perspective.apply(to: cgImage) else {
+            return nil
+        }
+        
         var transform = CGAffineTransform.identity
         transform.transformed(by: cropInfo)
         

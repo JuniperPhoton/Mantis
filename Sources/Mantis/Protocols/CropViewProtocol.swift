@@ -17,6 +17,7 @@ protocol CropViewProtocol: UIView {
     var image: CIImage { get set }
     var aspectRatioLockEnabled: Bool { get set }
     var delegate: CropViewDelegate? { get set }
+    var perspectiveControlEnabled: Bool { get set }
 
     func initialSetup(delegate: CropViewDelegate, presetFixedRatioType: PresetFixedRatioType)
     func setViewDefaultProperties()
@@ -49,6 +50,7 @@ protocol CropViewProtocol: UIView {
 
     func rotate(by angle: Angle)
     func makeTransformation() -> Transformation
+    func setActivePerspectiveDirection(_ direction: PerspectiveDirection?)
 }
 
 extension CropViewProtocol {

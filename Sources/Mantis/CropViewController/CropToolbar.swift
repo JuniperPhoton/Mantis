@@ -79,6 +79,26 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         return button
     }()
     
+    private lazy var horizontalPerspectiveButton: UIButton = {
+        let button = createOptionButton(withTitle: nil, andAction: #selector(horizontalPerspective(_:)))
+        let icon = iconProvider?.getHorizontalPerspectiveIcon() ?? ToolBarButtonImageBuilder.horizontalPerspectiveImage()
+        button.setImage(icon, for: .normal)
+        button.accessibilityIdentifier = "HorizontalPerspectiveButton"
+        button.accessibilityLabel = LocalizedHelper.getString("Mantis.Horizontal perspective", value: "Horizontal perspective")
+        button.addHoverHighlightStyleCompat()
+        return button
+    }()
+    
+    private lazy var verticalPerspectiveButton: UIButton = {
+        let button = createOptionButton(withTitle: nil, andAction: #selector(verticalPerspective(_:)))
+        let icon = iconProvider?.getVerticalPerspectiveIcon() ?? ToolBarButtonImageBuilder.verticalPerspectiveImage()
+        button.setImage(icon, for: .normal)
+        button.accessibilityIdentifier = "VerticalPerspectiveButton"
+        button.accessibilityLabel = LocalizedHelper.getString("Mantis.Vertical perspective", value: "Vertical perspective")
+        button.addHoverHighlightStyleCompat()
+        return button
+    }()
+    
     private var fixedRatioSettingButton: UIButton?
     private var fixedRatioLockIconView: UIView?
     
@@ -126,6 +146,15 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
             } else {
                 autoAdjustButton.tintColor = .gray
             }
+        }
+    }
+    
+    private var activePerspectiveDirection: PerspectiveDirection? {
+        didSet {
+            horizontalPerspectiveButton.tintColor = activePerspectiveDirection == .horizontal ? .yellow : config.foregroundColor
+            verticalPerspectiveButton.tintColor = activePerspectiveDirection == .vertical ? .yellow : config.foregroundColor
+            horizontalPerspectiveButton.accessibilityTraits = activePerspectiveDirection == .horizontal ? [.button, .selected] : .button
+            verticalPerspectiveButton.accessibilityTraits = activePerspectiveDirection == .vertical ? [.button, .selected] : .button
         }
     }
     
@@ -177,6 +206,14 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
         
         if config.toolbarButtonOptions.contains(.verticallyFlip) {
             addButtonsToContainer(button: verticallyFlipButton)
+        }
+        
+        if config.toolbarButtonOptions.contains(.verticalPerspective) {
+            addButtonsToContainer(button: verticalPerspectiveButton)
+        }
+        
+        if config.toolbarButtonOptions.contains(.horizontalPerspective) {
+            addButtonsToContainer(button: horizontalPerspectiveButton)
         }
         
         if config.toolbarButtonOptions.contains(.autoAdjust) {
@@ -326,6 +363,19 @@ extension CropToolbar {
     @objc private func autoAdjust(_ sender: Any) {
         autoAdjustButtonActive.toggle()
         delegate?.didSelectAutoAdjust(self, isActive: autoAdjustButtonActive)
+    }
+    
+    @objc private func horizontalPerspective(_ sender: Any) {
+        togglePerspectiveDirection(.horizontal)
+    }
+    
+    @objc private func verticalPerspective(_ sender: Any) {
+        togglePerspectiveDirection(.vertical)
+    }
+    
+    private func togglePerspectiveDirection(_ direction: PerspectiveDirection) {
+        activePerspectiveDirection = activePerspectiveDirection == direction ? nil : direction
+        delegate?.didSelectPerspectiveAdjustment(self, direction: activePerspectiveDirection)
     }
     
     @objc private func crop(_ sender: Any) {

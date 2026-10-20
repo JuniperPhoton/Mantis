@@ -88,19 +88,48 @@ When the user drags a corner handle, `CropView` computes the new crop rect and a
 
 The rotation control view (`RotationDial` or `SlideDial`) sends angle updates back to `CropView`. `CropView` applies a `CGAffineTransform` rotation to `CropWorkbenchView` (the scroll view). The range is ±45°. For larger rotations, use the 90° rotate button.
 
-### 4. Cropping → Output Image
+### 4. Perspective Correction
+
+Vertical and horizontal perspective (keystone) correction works like the Photos app and Lightroom. It is opt-in through two toolbar buttons:
+
+```swift
+config.cropToolbarConfig.toolbarButtonOptions = [.cancel, .counterclockwiseRotate,
+                                                 .verticalPerspective, .horizontalPerspective,
+                                                 .reset, .ratio, .done]
+```
+
+**UI.** Tapping a perspective button highlights it, and a slide ruler (−100…100) takes the place of the attached rotation control below the crop box. Tapping the highlighted button again brings the rotation control back. Tapping the value above the ruler resets that direction to 0. **Reset** clears both directions. If either button is in `toolbarButtonOptions`, `CropView` keeps room for the ruler below the crop box even when the rotation control is hidden.
+
+**Model.** `Perspective` (`Perspective.swift`) holds `horizontal` and `vertical` in −1…1, in *image space*. The image plane is tilted up to 30° in 3D, projected through a pinhole camera (focal length 1.2× the long side), and the projected quad is scaled back to fit the original image size. A positive `vertical` brings the top edge closer to the viewer, and a positive `horizontal` brings the right edge closer.
+
+**Rendering.** The warp is the built-in `CIPerspectiveTransform` filter. Its output is composited over a clear image, so the extent stays the same as the source. Everything that depends on the image size (scroll view layout, `CropInfo`) keeps working unchanged. Areas outside the warped quad are transparent.
+
+**Screen vs. image space.** The rulers act in *screen* space: "vertical" always means vertical on screen, even after 90° rotations or flips. `CropView` snaps the workbench transform's axes to the closest screen axes and maps between the two spaces. The stored value stays in image space.
+
+**Keeping the crop box inside the image.** Once warped, the image is no longer a rectangle. The crop box must stay inside the warped quad, which `ImageContainer.validQuad` stores shrunk slightly so that filtered edge pixels never leak in. With the crop box fixed, every allowed image translation keeps all four crop box corners inside the quad. These limits form a convex region, which `Perspective.closestFeasiblePoint(to:)` solves directly. The existing rule that the workbench bounds stay inside the image container is added to the same set of limits.
+
+- **Panning:** `scrollViewDidScroll` and `CropWorkbenchView.updateContentOffset()` (via `contentOffsetAdjuster`) move the image the least distance back into the allowed region. That means it slides along a slanted edge.
+- **Zooming:** the minimum zoom is the smallest zoom scale at which the crop box fits *somewhere* in the quad. It is found by binary search, because zooming in shrinks the crop box in image space, so once it fits it keeps fitting. It is applied through `CropWorkbenchView.minimumZoomScaleAdjuster`, so the rotation, resize, and 90° rotation paths all respect it.
+- **Crop handles:** `ImageContainer.contains(rect:fromView:tolerance:)` tests the four actual crop box corners against the quad.
+- **Moving the ruler:** if the crop box no longer fits, the image zooms in around the crop box center. If the user hasn't zoomed by hand, it zooms back out as the correction is reduced.
+
+When the perspective is zero, none of these limits apply and the old behaviour is unchanged.
+
+**Output and persistence.** `ImageCropHelper.crop(cgImage:cropInfo:)` applies `cropInfo.perspective` to the source image before the existing crop. In-UI crops, `CropViewController.process(_:)`, and `Mantis.crop(image:by:)` all go through this single path. `Transformation.perspective` restores the correction with `presetTransformationType = .presetInfo(info:)`.
+
+### 5. Cropping → Output Image
 
 When the user taps **Done**:
 
 1. `CropToolbarDelegate.didSelectCrop` is called on `CropViewController`.
 2. `CropViewController.crop()` calls `cropView.crop()` (sync) or `cropView.asyncCrop(completion:)`.
-3. `CropView` computes the final `CropInfo` (translation, rotation, scale, crop size, image view size, four corner coordinates).
-4. `UIImage+crop(by:)` applies the transform and crops the `CGImage` with `CGContext`.
+3. `CropView` computes the final `CropInfo` (translation, rotation, scale, crop size, image view size, four corner coordinates, perspective).
+4. `UIImage+crop(by:)` applies the perspective correction (if any) with Core Image, then applies the transform and crops the `CGImage` with `CGContext`.
 5. The delegate receives `cropViewControllerDidCrop(_:cropped:transformation:cropInfo:)`.
 
 The `Transformation` tuple lets you save and restore the exact crop state later via `config.cropViewConfig.presetTransformationType = .presetInfo(info: savedTransformation)`.
 
-### 5. Toolbar
+### 6. Toolbar
 
 `CropToolbar` (or any custom `CropToolbarProtocol` implementation) renders action buttons defined by `ToolbarButtonOptions`. Each button tap calls through `CropToolbarDelegate` to `CropViewController`, which dispatches to the appropriate `CropView` method. Button visibility is controlled by an `OptionSet`:
 
@@ -108,7 +137,7 @@ The `Transformation` tuple lets you save and restore the exact crop state later 
 config.cropToolbarConfig.toolbarButtonOptions = [.cancel, .done, .reset, .ratio, .counterclockwiseRotate]
 ```
 
-### 6. Mask / Overlay
+### 7. Mask / Overlay
 
 `CropMaskViewManager` places two views:
 
@@ -211,7 +240,8 @@ typealias CropInfo = (
     scaleY: CGFloat,
     cropSize: CGSize,
     imageViewSize: CGSize,
-    cropRegion: CropRegion   // four corners of the crop rect
+    cropRegion: CropRegion,  // four corners of the crop rect, relative to the perspective-corrected image
+    perspective: Perspective // applied to the source image before cropping
 )
 
 // Full state needed to restore a previous crop
@@ -224,9 +254,21 @@ typealias Transformation = (
     maskFrame: CGRect,
     cropWorkbenchViewBounds: CGRect,
     horizontallyFlipped: Bool,
-    verticallyFlipped: Bool
+    verticallyFlipped: Bool,
+    perspective: Perspective
 )
+
+// Keystone correction in image space, each value in -1...1
+struct Perspective {
+    var horizontal: CGFloat  // > 0 brings the right edge closer to the viewer
+    var vertical: CGFloat    // > 0 brings the top edge closer to the viewer
+    static let zero: Perspective
+}
+
+enum PerspectiveDirection { case horizontal, vertical }
 ```
+
+`CropToolbarDelegate.didSelectPerspectiveAdjustment(_:direction:)` reports which perspective ruler is active (`nil` when the rotation control is back). `CropToolbarIconProvider` can supply custom icons through `getHorizontalPerspectiveIcon()` and `getVerticalPerspectiveIcon()`.
 
 ---
 

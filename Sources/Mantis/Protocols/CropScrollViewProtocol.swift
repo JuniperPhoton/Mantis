@@ -13,6 +13,11 @@ protocol CropWorkbenchViewProtocol: UIScrollView {
     var touchesCancelled: () -> Void { get set }
     var touchesEnded: () -> Void { get set }
     
+    /// Lets the owner raise the minimum zoom scale, e.g. to keep the crop box inside a perspective-warped image.
+    var minimumZoomScaleAdjuster: ((CGFloat) -> CGFloat)? { get set }
+    /// Called after the content offset is clamped to the content, to apply extra constraints.
+    var contentOffsetAdjuster: (() -> Void)? { get set }
+    
     func updateContentOffset()
     func updateMinZoomScale()
     func zoomScaleToBound(animated: Bool)

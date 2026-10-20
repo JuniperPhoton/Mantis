@@ -131,4 +131,12 @@ struct ToolBarButtonImageBuilder {
         
         return nil
     }
+    
+    static func horizontalPerspectiveImage(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
+        UIImage(systemName: "trapezoid.and.line.horizontal", withConfiguration: createConfiguration(weight: weight))
+    }
+    
+    static func verticalPerspectiveImage(weight: UIImage.SymbolWeight = defaultWeight) -> UIImage? {
+        UIImage(systemName: "trapezoid.and.line.vertical", withConfiguration: createConfiguration(weight: weight))
+    }
 }

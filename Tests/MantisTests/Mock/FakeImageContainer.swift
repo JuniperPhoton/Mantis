@@ -9,6 +9,8 @@
 import UIKit
 
 class FakeImageContainer: UIView, ImageContainerProtocol {
+    var validQuad = Perspective.unitQuad
+    
     func contains(rect: CGRect, fromView view: UIView, tolerance: CGFloat) -> Bool {
         false
     }

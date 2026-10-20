@@ -34,7 +34,8 @@ public typealias Transformation = (
     maskFrame: CGRect,
     cropWorkbenchViewBounds: CGRect,
     horizontallyFlipped: Bool,
-    verticallyFlipped: Bool
+    verticallyFlipped: Bool,
+    perspective: Perspective
 )
 
 public struct CropRegion: Equatable {
@@ -51,7 +52,8 @@ public typealias CropInfo = (
     scaleY: CGFloat,
     cropSize: CGSize,
     imageViewSize: CGSize,
-    cropRegion: CropRegion // The 4 corners of the crop rectangle. The original point is in the top left. The maximum value is the bottom right.
+    cropRegion: CropRegion, // The 4 corners of the crop rectangle. The original point is in the top left. The maximum value is the bottom right.
+    perspective: Perspective // Applied to the source image before the crop. cropRegion is relative to the perspective-corrected image.
 )
 
 typealias CropOutput = (
