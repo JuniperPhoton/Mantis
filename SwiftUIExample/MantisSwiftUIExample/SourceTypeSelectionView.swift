@@ -13,36 +13,48 @@ struct SourceTypeSelectionView: View {
     @Binding var showImagePicker: Bool
 
     var body: some View {
-        VStack {
+        VStack(spacing: 16) {
             Text("Select Image Source")
-                .font(.title)
-                .padding()
+                .font(.title2.bold())
 
-            Button("Photo Library") {
-                showSourceTypeSelection = false
-                showImagePicker = true
+            HStack(spacing: 12) {
+                createSourceButton(title: "Photo Library", systemImage: "photo.on.rectangle") {
+                    showImagePicker = true
+                }
+                createSourceButton(title: "Camera", systemImage: "camera") {
+                    showCamera = true
+                }
             }
-            .font(.title)
-            .padding()
 
-            Button("Camera") {
-                showSourceTypeSelection = false
-                showCamera = true
-            }
-            .font(.title)
-            .padding()
-
-            Button("Cancel") {
+            Button("Cancel", role: .cancel) {
                 showSourceTypeSelection = false
             }
-            .font(.title)
-            .padding()
+            .glassButtonStyle()
         }
+        .padding(24)
+        .presentationDetents([.height(260)])
+    }
+
+    private func createSourceButton(title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button {
+            showSourceTypeSelection = false
+            action()
+        } label: {
+            VStack(spacing: 8) {
+                Image(systemName: systemImage)
+                    .font(.title)
+                    .foregroundStyle(.tint)
+                Text(title)
+                    .font(.headline)
+            }
+            .frame(maxWidth: .infinity, minHeight: 96)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .glassBackground(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
 
-struct SourceTypeSelectionView_Previews: PreviewProvider {
-    static var previews: some View {
-        SourceTypeSelectionView(showSourceTypeSelection: .constant(false), showCamera: .constant(false), showImagePicker: .constant(false))
-    }
+#Preview {
+    SourceTypeSelectionView(showSourceTypeSelection: .constant(false), showCamera: .constant(false), showImagePicker: .constant(false))
 }
