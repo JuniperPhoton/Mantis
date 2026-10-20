@@ -46,7 +46,13 @@ final class SlideDial: UIView, RotationControlViewProtocol {
     
     private func setIndicator(with angle: Angle) {
         indicator?.text = "\(Int(round(angle.degrees)))"
-        indicator?.textColor = angle.degrees > 0 ? config.positiveIndicatorColor : config.notPositiveIndicatorColor
+        if angle.degrees > 0 {
+            indicator?.textColor = config.positiveIndicatorColor
+        } else if angle.degrees < 0, let negativeIndicatorColor = config.negativeIndicatorColor {
+            indicator?.textColor = negativeIndicatorColor
+        } else {
+            indicator?.textColor = config.notPositiveIndicatorColor
+        }
     }
     
     private func handleRotation(by angle: Angle) {

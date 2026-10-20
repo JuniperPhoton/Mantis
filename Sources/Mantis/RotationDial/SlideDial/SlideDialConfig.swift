@@ -21,6 +21,8 @@ public struct SlideDialConfig {
     
     public var positiveIndicatorColor = UIColor.yellow
     public var notPositiveIndicatorColor = UIColor.white
+    /// Color for negative values. Falls back to `notPositiveIndicatorColor` when nil.
+    public var negativeIndicatorColor: UIColor?
     
     public var indicatorSize = CGSize(width: 40, height: 40)
     public var slideRulerHeight: CGFloat = 45

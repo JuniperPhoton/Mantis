@@ -50,6 +50,9 @@ public struct Config {
     
     public var ratioModalPresenter: any RatioModalPresenter = DefaultRatioModalPresenter()
     
+    /// Highlights active toolbar buttons (auto adjust, perspective) and the value of the built-in perspective slider.
+    public var accentColor: UIColor = .yellow
+    
     public private(set) var localizationConfig = Mantis.localizationConfig
     
     var customRatios: [(width: Double, height: Double)] = []

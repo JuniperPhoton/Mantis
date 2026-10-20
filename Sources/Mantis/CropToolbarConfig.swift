@@ -36,6 +36,9 @@ public struct CropToolbarConfig {
     public var backgroundShapeConfig: BackgroundShapeConfig = .empty
     public var foregroundColor: UIColor = .white
     
+    /// Set by `CropViewController` from `Config.accentColor`.
+    public internal(set) var accentColor: UIColor = .yellow
+    
     public var toolbarButtonOptions: ToolbarButtonOptions = .default
     
     // The properties below are required by CropViewController and for some specific scenarios

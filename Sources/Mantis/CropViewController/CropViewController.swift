@@ -103,6 +103,7 @@ open class CropViewController: UIViewController {
                 config.cropToolbarConfig.includeFixedRatiosSettingButton = true
         }
         
+        config.cropToolbarConfig.accentColor = config.accentColor
         cropToolbar.createToolbarUI(config: config.cropToolbarConfig)                
     }
     

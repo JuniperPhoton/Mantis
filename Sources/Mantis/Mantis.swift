@@ -29,11 +29,14 @@ import UIKit
 public func cropViewController(image: CIImage,
                                config: Mantis.Config = Mantis.Config(),
                                cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
-                               rotationControlView: RotationControlViewProtocol? = nil) -> Mantis.CropViewController {
+                               rotationControlView: RotationControlViewProtocol? = nil,
+                               perspectiveControlView: RotationControlViewProtocol? = nil) -> Mantis.CropViewController {
     let cropViewController = CropViewController(config: config)
     cropViewController.cropView = buildCropView(withImage: image,
                                                 config: config.cropViewConfig,
-                                                rotationControlView: rotationControlView)
+                                                accentColor: config.accentColor,
+                                                rotationControlView: rotationControlView,
+                                                perspectiveControlView: perspectiveControlView)
     cropViewController.cropToolbar = cropToolbar
     return cropViewController
 }
@@ -41,11 +44,14 @@ public func cropViewController(image: CIImage,
 public func cropViewController<T: CropViewController>(image: CIImage,
                                                       config: Mantis.Config = Mantis.Config(),
                                                       cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
-                                                      rotationControlView: RotationControlViewProtocol? = nil) -> T {
+                                                      rotationControlView: RotationControlViewProtocol? = nil,
+                                                      perspectiveControlView: RotationControlViewProtocol? = nil) -> T {
     let cropViewController = T(config: config)
     cropViewController.cropView = buildCropView(withImage: image,
                                                 config: config.cropViewConfig,
-                                                rotationControlView: rotationControlView)
+                                                accentColor: config.accentColor,
+                                                rotationControlView: rotationControlView,
+                                                perspectiveControlView: perspectiveControlView)
     cropViewController.cropToolbar = cropToolbar
     return cropViewController
 }
@@ -54,11 +60,14 @@ public func setupCropViewController(_ cropViewController: Mantis.CropViewControl
                                     with image: CIImage,
                                     and config: Mantis.Config = Mantis.Config(),
                                     cropToolbar: CropToolbarProtocol = CropToolbar(frame: .zero),
-                                    rotationControlView: RotationControlViewProtocol? = nil) {
+                                    rotationControlView: RotationControlViewProtocol? = nil,
+                                    perspectiveControlView: RotationControlViewProtocol? = nil) {
     cropViewController.config = config
     cropViewController.cropView = buildCropView(withImage: image,
                                                 config: config.cropViewConfig,
-                                                rotationControlView: rotationControlView)
+                                                accentColor: config.accentColor,
+                                                rotationControlView: rotationControlView,
+                                                perspectiveControlView: perspectiveControlView)
     cropViewController.cropToolbar = cropToolbar
 }
 
@@ -96,7 +105,9 @@ private(set) var bundle: Bundle? = {
 
 private func buildCropView(withImage image: CIImage,
                            config cropViewConfig: CropViewConfig,
-                           rotationControlView: RotationControlViewProtocol?) -> CropViewProtocol {
+                           accentColor: UIColor,
+                           rotationControlView: RotationControlViewProtocol?,
+                           perspectiveControlView: RotationControlViewProtocol?) -> CropViewProtocol {
     let cropAuxiliaryIndicatorView = CropAuxiliaryIndicatorView(frame: .zero,
                                                                 cropBoxHotAreaUnit: cropViewConfig.cropBoxHotAreaUnit,
                                                                 disableCropBoxDeformation: cropViewConfig.disableCropBoxDeformation)
@@ -108,8 +119,14 @@ private func buildCropView(withImage image: CIImage,
                             imageContainer: imageContainer,
                             cropWorkbenchView: buildCropWorkbenchView(with: cropViewConfig, and: imageContainer),
                             cropMaskViewManager: buildCropMaskViewManager(with: cropViewConfig))
+    cropView.accentColor = accentColor
     
     setupRotationControlViewIfNeeded(withConfig: cropViewConfig, cropView: cropView, rotationControlView: rotationControlView)
+    
+    if let perspectiveControlView {
+        cropView.perspectiveControlView = perspectiveControlView
+    }
+    
     return cropView
 }
 

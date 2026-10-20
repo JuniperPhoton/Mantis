@@ -70,20 +70,40 @@ final class CropView: UIView {
     // Referred to in extension
     private(set) var activePerspectiveDirection: PerspectiveDirection?
     
-    lazy var perspectiveControlView: SlideDial = {
-        var config = SlideDialConfig()
-        config.limitation = perspectiveSliderLimitation
-        let slideDial = SlideDial(frame: .zero,
-                                  config: config,
-                                  viewModel: SlideDialViewModel(),
-                                  slideRuler: SlideRuler(frame: .zero, config: config))
-        slideDial.accessibilityLabel = LocalizedHelper.getString("Mantis.Adjust image perspective", value: "Adjust image perspective")
-        slideDial.isHidden = true
-        addSubview(slideDial)
-        return slideDial
-    }()
+    /// The control shown while a perspective direction is active. Defaults to a built-in slide ruler.
+    /// A custom control reports and receives values in degrees within ±``perspectiveSliderLimitation``.
+    var perspectiveControlView: RotationControlViewProtocol {
+        get {
+            if let perspectiveControlViewStorage {
+                return perspectiveControlViewStorage
+            }
+            
+            var config = SlideDialConfig()
+            config.limitation = Self.perspectiveSliderLimitation
+            config.positiveIndicatorColor = accentColor
+            config.negativeIndicatorColor = accentColor
+            let slideDial = SlideDial(frame: .zero,
+                                      config: config,
+                                      viewModel: SlideDialViewModel(),
+                                      slideRuler: SlideRuler(frame: .zero, config: config))
+            self.perspectiveControlView = slideDial
+            return slideDial
+        }
+        set {
+            perspectiveControlViewStorage?.removeFromSuperview()
+            newValue.accessibilityLabel = LocalizedHelper.getString("Mantis.Adjust image perspective", value: "Adjust image perspective")
+            newValue.isHidden = true
+            addSubview(newValue)
+            perspectiveControlViewStorage = newValue
+        }
+    }
     
-    private let perspectiveSliderLimitation: CGFloat = 100
+    private var perspectiveControlViewStorage: RotationControlViewProtocol?
+    
+    /// Set from `Config.accentColor`, used by the built-in perspective slider.
+    var accentColor: UIColor = .yellow
+    
+    static let perspectiveSliderLimitation: CGFloat = 100
     private let perspectiveConstraintTolerance: CGFloat = 1e-3
     private var isConstrainingContentOffset = false
     
@@ -1311,7 +1331,7 @@ extension CropView {
         }
         
         var screenPerspective = getScreenPerspective()
-        let newValue = value.degrees / perspectiveSliderLimitation
+        let newValue = value.degrees / Self.perspectiveSliderLimitation
         
         guard screenPerspective[direction] != newValue else {
             return
@@ -1328,8 +1348,8 @@ extension CropView {
         }
         
         // The slider only accepts values that are strictly within its limitation
-        let limitation = perspectiveSliderLimitation - 1e-6
-        let value = min(limitation, max(-limitation, getScreenPerspective()[direction] * perspectiveSliderLimitation))
+        let limitation = Self.perspectiveSliderLimitation - 1e-6
+        let value = min(limitation, max(-limitation, getScreenPerspective()[direction] * Self.perspectiveSliderLimitation))
         perspectiveControlView.updateRotationValue(by: Angle(degrees: value))
     }
     

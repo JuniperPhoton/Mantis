@@ -142,7 +142,7 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
     private var autoAdjustButtonActive = false {
         didSet {
             if autoAdjustButtonActive {
-                autoAdjustButton.tintColor = .yellow
+                autoAdjustButton.tintColor = config.accentColor
             } else {
                 autoAdjustButton.tintColor = .gray
             }
@@ -151,8 +151,8 @@ public final class CropToolbar: UIView, CropToolbarProtocol {
     
     private var activePerspectiveDirection: PerspectiveDirection? {
         didSet {
-            horizontalPerspectiveButton.tintColor = activePerspectiveDirection == .horizontal ? .yellow : config.foregroundColor
-            verticalPerspectiveButton.tintColor = activePerspectiveDirection == .vertical ? .yellow : config.foregroundColor
+            horizontalPerspectiveButton.tintColor = activePerspectiveDirection == .horizontal ? config.accentColor : config.foregroundColor
+            verticalPerspectiveButton.tintColor = activePerspectiveDirection == .vertical ? config.accentColor : config.foregroundColor
             horizontalPerspectiveButton.accessibilityTraits = activePerspectiveDirection == .horizontal ? [.button, .selected] : .button
             verticalPerspectiveButton.accessibilityTraits = activePerspectiveDirection == .vertical ? [.button, .selected] : .button
         }
